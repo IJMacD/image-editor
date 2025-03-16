@@ -1,12 +1,16 @@
 import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
-import { ProjectDispatchContext } from "../Store/context";
-import { editLayer } from "../Store/actions";
+import { StoreContext, DispatchContext } from "../Store/context";
+import { editLayer } from "../Store/project/actions";
 import { Layer } from "../types";
 
 export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElement|null, editableLayer?: Layer }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [mouseDown, setMouseDown] = useState(false);
-  const dispatch = useContext(ProjectDispatchContext);
+  const [mouseDown, setMouseDown] = useState(null as { x: number, y: number }|null);
+  const store = useContext(StoreContext);
+  const dispatch = useContext(DispatchContext);
+
+  const toolColor = store.ui.toolOptions.color;
+  const toolWidth = store.ui.toolOptions.width;
 
   useEffect(() => {
     if (!canvasRef.current || canvasRef.current === canvas) {
@@ -33,9 +37,11 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
     }
   }, [canvas]);
 
-  function handleMouseDown () {
+  function handleMouseDown (e: MouseEvent<HTMLCanvasElement>) {
     if (editableLayer) {
-      setMouseDown(true);
+      const x = e.pageX - e.currentTarget.offsetLeft;
+      const y = e.pageY - e.currentTarget.offsetTop;
+      setMouseDown({ x, y });
     }
   }
 
@@ -47,18 +53,27 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
         return;
       }
 
+      const { x: prevX, y: prevY } = mouseDown;
+
       const x = e.pageX - e.currentTarget.offsetLeft;
       const y = e.pageY - e.currentTarget.offsetTop;
 
+      setMouseDown({ x, y });
+
       ctx.beginPath();
-      ctx.arc(x, y, 5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(x, y);
+
+      ctx.strokeStyle = toolColor;
+      ctx.lineWidth = toolWidth;
+      ctx.lineCap = "round"
+      ctx.stroke();
     }
   }
 
   function handleMouseUp () {
     if (mouseDown && editableLayer && canvasRef.current) {
-      setMouseDown(false);
+      setMouseDown(null);
       dispatch(editLayer(editableLayer.id, { canvas: canvasRef.current }));
     }
   }

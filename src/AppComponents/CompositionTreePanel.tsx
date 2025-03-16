@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { CompositeLayer, ImageProject } from "../types";
 import { getLayerByID } from "../util/project";
-import { ProjectDispatchContext } from "../Store/context";
-import { editCompositeLayer, editLayer } from "../Store/actions";
+import { DispatchContext } from "../Store/context";
+import { editCompositeLayer, editLayer } from "../Store/project/actions";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
   return (
@@ -20,7 +20,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
 }
 
 function CompositionTree ({ composition, project }: { composition: CompositeLayer, project: ImageProject }) {
-  const dispatch = useContext(ProjectDispatchContext);
+  const dispatch = useContext(DispatchContext);
 
   function handleEditComposition () {
     const operation = prompt("Composition type:", composition.operation);

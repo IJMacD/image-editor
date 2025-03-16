@@ -1,9 +1,7 @@
 import { createContext, Dispatch } from "react";
-import { ImageProject } from "../types";
 import { Action } from "./actions";
+import { AppState, defaultAppState } from "./reducer";
 
-export const ProjectContext = createContext<ImageProject | null>(null);
+export const StoreContext = createContext<AppState>(defaultAppState);
 
-export const ProjectDispatchContext = createContext<Dispatch<Action>>(
-  () => void 0
-);
+export const DispatchContext = createContext<Dispatch<Action>>(() => void 0);
