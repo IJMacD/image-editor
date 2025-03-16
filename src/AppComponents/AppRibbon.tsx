@@ -29,14 +29,35 @@ export function AppRibbon () {
         <RibbonDivider />
         <RibbonButton icon="🪄" label="New Composition" onClick={() => dispatch(newComposition())} disabled={!project} />
       </RibbonTab>
-      <RibbonTab id="pencil" label="Pencil">
-        <label>
-          Thickness<br/>
-          <input type="number" min={1} value={toolWidth} onChange={e => dispatch(setToolWidth(e.target.valueAsNumber))} />
-        </label>
-        <RibbonDivider />
-        <input type="color" value={toolColor} onChange={e => dispatch(setToolColor(e.target.value))} />
-      </RibbonTab>
+      {
+        store.ui.tool === "pencil" &&
+        <RibbonTab id="pencil" label="Pencil">
+          <label>
+            Thickness<br/>
+            <input type="number" min={1} value={toolWidth} onChange={e => dispatch(setToolWidth(e.target.valueAsNumber))} />
+          </label>
+          <RibbonDivider />
+          <input type="color" value={toolColor} onChange={e => dispatch(setToolColor(e.target.value))} />
+        </RibbonTab>
+      }
+      {
+        store.ui.tool === "shapes" &&
+        <RibbonTab id="shapes" label="Shapes">
+          <label>
+            Shape<br/>
+            <select>
+              <option>Circle</option>
+              <option>Square</option>
+              <option>Triangle</option>
+            </select>
+          </label>
+          <RibbonDivider />
+          <label>
+            Fill Colour<br/>
+            <input type="color" value={toolColor} onChange={e => dispatch(setToolColor(e.target.value))} />
+          </label>
+        </RibbonTab>
+      }
     </Ribbon>
   )
 }

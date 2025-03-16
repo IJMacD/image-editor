@@ -6,6 +6,7 @@ import { defaultAppState, rootReducer } from '../Store/reducer'
 import { StoreContext, DispatchContext } from '../Store/context'
 import { LayersPanel } from './LayersPanel'
 import { CompositionTreePanel } from './CompositionTreePanel'
+import { ToolSelector } from './ToolSelector'
 
 function App() {
   const [store, dispatch] = useReducer(rootReducer, defaultAppState);
@@ -17,7 +18,7 @@ function App() {
         <AppRibbon />
         <Panel row>
           <div className='bg-red-200 w-16 flex flex-col place-items-center'>
-            <button className="size-12 p-0 m-1 rounded bg-white">🖉</button>
+            <ToolSelector />
           </div>
           <div className='bg-blue-100 flex-2'>
             { store.project && <LayersPanel project={store.project} /> }

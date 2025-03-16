@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RibbonTab, RibbonTabProps } from "./RibbonTab";
 
 export function Ribbon ({ children }: { children: React.ReactNode }) {
@@ -6,9 +6,17 @@ export function Ribbon ({ children }: { children: React.ReactNode }) {
 
   const [selectedTabID, setSelectedTabID] = useState(Object.keys(tabs)[0]);
 
-  const selectedTab = tabs[selectedTabID].element;
+  const selectedTab = tabs[selectedTabID]?.element;
 
   const tabMode = Object.keys(tabs).length > 0;
+
+  const tabAvailable = !!selectedTab;
+
+  useEffect(() => {
+    if (!tabAvailable && tabMode) {
+      setSelectedTabID(Object.keys(tabs)[0]);
+    }
+  }, [tabAvailable, tabMode]);
 
   return (
     <div className="border-b-1 border-gray-300 shadow-lg z-1 flex flex-col">
@@ -28,7 +36,7 @@ export function Ribbon ({ children }: { children: React.ReactNode }) {
         </ul>
       }
       <div className="h-24 flex p-2">
-        { tabMode ? selectedTab: children }
+        { tabMode ? selectedTab : children }
       </div>
     </div>
   )

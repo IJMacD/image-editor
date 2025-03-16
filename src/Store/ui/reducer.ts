@@ -11,6 +11,11 @@ export type UIState = {
 
 export function uiReducer(state: UIState, action: Action): UIState {
   switch (action.type) {
+    case ActionTypes.SET_TOOL:
+      return {
+        ...state,
+        tool: action.payload.tool,
+      };
     case ActionTypes.SET_TOOL_COLOR:
       return {
         ...state,
