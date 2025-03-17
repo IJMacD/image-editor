@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { CompositeLayer, ImageProject } from "../types";
 import { getLayerByID } from "../util/project";
 import { DispatchContext } from "../Store/context";
-import { editCompositeLayer, editLayer } from "../Store/project/actions";
+import { deleteLayer, editCompositeLayer, editLayer } from "../Store/project/actions";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
   return (
@@ -51,10 +51,17 @@ function CompositionTree ({ composition, project }: { composition: CompositeLaye
                   }
                 }
 
+                function handleDelete() {
+                  if (confirm(`Are you sure you want to delete '${l.name}'`)) {
+                    dispatch(deleteLayer(l.id));
+                  }
+                }
+
                 return (
                   <li key={i} className="flex place-items-center">
                     <span className="flex-1">{layer.name}</span>
                     <button onClick={handleRename}>✎</button>
+                    <button onClick={handleDelete}>🗑️</button>
                   </li>
                 );
               }

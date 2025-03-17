@@ -12,7 +12,7 @@ import { useKeyboardShortcuts } from '../Hooks/useKeyboardShortcuts'
 function App() {
   const [store, dispatch] = useReducer(rootReducer, defaultAppState);
 
-  useKeyboardShortcuts(dispatch);
+  useKeyboardShortcuts(store, dispatch);
 
   return (
     <StoreContext.Provider value={store}>

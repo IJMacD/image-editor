@@ -1,6 +1,6 @@
 import type { Reducer } from "react";
 import type { Action } from "./actions";
-import { projectReducer } from "./project/reducer";
+import { defaultProjectState, projectReducer } from "./project/reducer";
 import type { ImageProject } from "../types";
 import { defaultUIState, uiReducer, UIState } from "./ui/reducer";
 
@@ -12,7 +12,7 @@ export type AppState = {
 
 
 export const defaultAppState = {
-  project: null,
+  project: defaultProjectState,
   ui: defaultUIState,
 };
 

@@ -3,8 +3,10 @@ import { decreaseToolSize, increaseToolSize } from "../Store/ui/actions";
 import { Action } from "../Store/actions";
 import { useEffect } from "react";
 import { newLayer } from "../Store/project/actions";
+import { AppState } from "../Store/reducer";
+import { getNextLayerID } from "../util/project";
 
-export function useKeyboardShortcuts(dispatch: React.Dispatch<Action>) {
+export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<Action>) {
 
     useEffect(() => {
         const cb = (e: KeyboardEvent) => {
@@ -12,9 +14,11 @@ export function useKeyboardShortcuts(dispatch: React.Dispatch<Action>) {
             if (e.ctrlKey && e.key != "Control") {
                 console.log("Ctrl + " + e.key);
                 switch (e.key) {
-                    case "n":
-                        dispatch(newLayer());
-                        e.preventDefault();
+                    case "n": 
+                        if (store.project) {
+                            const nextID = getNextLayerID(store.project);
+                            dispatch(newLayer(nextID));
+                        }
                         return;
                     default:
                         console.log(e.key);
@@ -37,5 +41,5 @@ export function useKeyboardShortcuts(dispatch: React.Dispatch<Action>) {
         document.addEventListener("keydown", cb);
 
         return () => document.removeEventListener("keydown", cb);
-    }, [dispatch]);
+    }, [store.project, dispatch]);
 }

@@ -4,6 +4,28 @@ import { ActionTypes } from "./actions";
 
 type ProjectState = ImageProject | null;
 
+const width = 512;
+const height = 512;
+
+export const defaultProjectState = {
+  layers: [
+    {
+      id: 1,
+      name: "Layer 1",
+      x: 0,
+      y: 0,
+      width,
+      height,
+      canvas: null,
+    },
+  ],
+  compositions: [
+    { inputs: [1], operation: "source-over" as GlobalCompositeOperation, parameters: {} },
+  ],
+  width,
+  height,
+};
+
 export function projectReducer(
   state: ProjectState,
   action: Action
@@ -11,36 +33,16 @@ export function projectReducer(
   switch (action.type) {
     case ActionTypes.NEW_DOCUMENT:
       if (!state) {
-        const width = 512;
-        const height = 512;
-        return {
-          layers: [
-            {
-              id: 1,
-              name: "Layer 1",
-              x: 0,
-              y: 0,
-              width,
-              height,
-              canvas: null,
-            },
-          ],
-          compositions: [
-            { inputs: [1], operation: "source-over", parameters: {} },
-          ],
-          width,
-          height,
-        };
+        return defaultProjectState;
       }
       break;
     case ActionTypes.NEW_LAYER:
       if (state) {
-        const id = getNextLayerID(state);
-
         const { width, height } = state;
 
+        const { id } = action.payload;  
+
         const newLayer = {
-          id,
           name: `Layer ${id}`,
           x: 0,
           y: 0,
@@ -107,12 +109,17 @@ export function projectReducer(
           ),
         }
       );
+
+    case ActionTypes.DELETE_LAYER:
+      return (
+        state && {
+          ...state,
+          layers: state.layers.filter(l => l.id !== action.payload.id),
+          compositions: removeLayerFromCompositions(state.compositions, action.payload.id),
+        }
+      )
   }
   return state;
-}
-
-function getNextLayerID(project: ImageProject) {
-  return Math.max(...project.layers.map((l) => l.id), 0) + 1;
 }
 
 function replaceComposition(
@@ -148,4 +155,11 @@ function replaceCompositionInner(
       inputs: replaceCompositionInner(c.inputs, compositeLayer, properties),
     };
   });
+}
+
+function removeLayerFromCompositions(compositions: CompositeLayer[], layerID: number): CompositeLayer[] {
+  return compositions.map(c => ({
+    ...c,
+    inputs: c.inputs.map(cc => typeof cc === "number" ? cc : removeLayerFromCompositions([cc], layerID)[0]).filter(i => i !== layerID),
+  }))
 }

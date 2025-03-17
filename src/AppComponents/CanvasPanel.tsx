@@ -53,7 +53,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
       const x = e.pageX - elementOffset.x;
       const y = e.pageY - elementOffset.y;
 
-      editorRef.current.mouseDown({ x, y });
+      editorRef.current.mouseDown({ x, y }, e.nativeEvent);
 
       setIsMouseDown(true);
     }
@@ -65,7 +65,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
       const x = e.pageX - elementOffset.x;
       const y = e.pageY - elementOffset.y;
 
-      editorRef.current.mouseMove({ x, y });
+      editorRef.current.mouseMove({ x, y }, e);
     }
   }, [isMouseDown]);
 

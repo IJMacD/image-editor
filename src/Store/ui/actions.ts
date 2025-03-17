@@ -3,6 +3,9 @@ export enum ActionTypes {
   SET_TOOL_COLOR = "ui/setToolColor",
   SET_TOOL_SIZE = "ui/setToolSize",
   ADJUST_TOOL_SIZE = "ui/adjustToolSize",
+  SET_SHAPE = "ui/setShape",
+  RIBBON_SET_TAB = "ui/ribbonSetTab",
+  SET_ACTIVE_LAYER = "ui/setActiveLayer",
 }
 
 type SetToolAction = {
@@ -25,7 +28,29 @@ type AdjustToolSizeAction = {
   payload: { change: number };
 };
 
-export type Action = SetToolAction | SetToolColorAction | SetToolSizeAction | AdjustToolSizeAction;
+type SetShapeAction = {
+  type: ActionTypes.SET_SHAPE;
+  payload: { shape: "circle" | "rectangle" | "triangle" };
+};
+
+type RibbonSetTabAction = {
+  type: ActionTypes.RIBBON_SET_TAB,
+  payload: { id: string },
+}
+
+type SetActiveLayerAction = {
+  type: ActionTypes.SET_ACTIVE_LAYER,
+  payload: { id: number },
+}
+
+export type Action =
+  | SetToolAction
+  | SetToolColorAction
+  | SetToolSizeAction
+  | AdjustToolSizeAction
+  | SetShapeAction
+  | RibbonSetTabAction
+  | SetActiveLayerAction;
 
 export function setTool(tool: string): SetToolAction {
   return {
@@ -59,4 +84,25 @@ export function decreaseToolSize(change: number = 1): AdjustToolSizeAction {
     type: ActionTypes.ADJUST_TOOL_SIZE,
     payload: { change: -change },
   };
+}
+
+export function setShape(shape: "circle" | "rectangle" | "triangle"): SetShapeAction {
+  return {
+    type: ActionTypes.SET_SHAPE,
+    payload: { shape }
+  }
+}
+
+export function setRibbonTab(id: string): RibbonSetTabAction {
+  return {
+    type: ActionTypes.RIBBON_SET_TAB,
+    payload: { id }
+  }
+}
+
+export function setActiveLayer(id: number): SetActiveLayerAction {
+  return {
+    type: ActionTypes.SET_ACTIVE_LAYER,
+    payload: { id }
+  }
 }

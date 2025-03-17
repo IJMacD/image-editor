@@ -22,12 +22,12 @@ export class Editor {
         this.#toolOptions = toolOptions;
     }
 
-    mouseDown(mousePos: Point) {
+    mouseDown(mousePos: Point, mouseEvent: MouseEvent) {
         this.#firstPoint = mousePos;
         this.#prevPoint = mousePos;
     }
 
-    mouseMove(mousePos: Point) {
+    mouseMove(mousePos: Point, mouseEvent: MouseEvent) {
         if (!this.#canvas || !this.#overlayCanvas) {
             return;
         }
@@ -62,21 +62,80 @@ export class Editor {
                 break;
             case "shapes": {
                 const toolColor = this.#toolOptions.color;
+                const shape = this.#toolOptions.shape;
 
                 oCtx.clearRect(0, 0, this.#overlayCanvas.width, this.#overlayCanvas.height);
-
-                const { x, y } = this.#firstPoint;
-
-                const dx = x - prevX;
-                const dy = y - prevY;
-
-                const r = Math.sqrt(dx * dx + dy * dy);
-
-                oCtx.beginPath();
-
-                oCtx.arc(x, y, r, 0, Math.PI * 2);
                 oCtx.fillStyle = toolColor;
-                oCtx.fill();
+
+                const { x, y } = mousePos;
+                const { x: startX, y: startY } = this.#firstPoint;
+                const dx = x - startX;
+                const dy = y - startY;
+
+                if (shape === "circle") {
+                    const r = Math.sqrt(dx * dx + dy * dy);
+                    oCtx.beginPath();
+
+                    if (mouseEvent.shiftKey) {
+                        oCtx.arc(startX, startY, r, 0, Math.PI * 2);
+                    }
+                    else {
+                        oCtx.arc((startX + x) / 2, (startY + y) / 2, r / 2, 0, Math.PI * 2);
+                    }
+
+                    oCtx.fill();
+                }
+                else if (shape === "rectangle") {
+                    oCtx.beginPath();
+                    if (mouseEvent.shiftKey) {
+
+                        if (mouseEvent.ctrlKey) {
+                            const d = (dx + dy) / 2;
+                            oCtx.fillRect(startX - d, startY - d, d * 2, d * 2);
+                        }
+                        else {
+                            oCtx.fillRect(startX - dx, startY - dy, dx * 2, dy * 2);
+                        }
+                    }
+                    else {
+
+                        if (mouseEvent.ctrlKey) {
+                            const d = (dx + dy) / 2;
+                            oCtx.fillRect(startX, startY, d, d);
+                        }
+                        else {
+                            oCtx.fillRect(startX, startY, dx, dy);
+                        }
+                    }
+                }
+                else if (shape === "triangle") {
+                    const r = Math.sqrt(dx * dx + dy * dy);
+                    const theta = Math.atan2(dy, dx);
+
+                    oCtx.beginPath();
+
+                    if (mouseEvent.shiftKey) {
+                        oCtx.moveTo(x, y);
+
+                        const x1 = startX + r * Math.cos(theta + Math.PI * 2 / 3);
+                        const y1 = startY + r * Math.sin(theta + Math.PI * 2 / 3);
+                        oCtx.lineTo(x1, y1);
+
+                        const x2 = startX + r * Math.cos(theta + Math.PI * 4 / 3);
+                        const y2 = startY + r * Math.sin(theta + Math.PI * 4 / 3);
+                        oCtx.lineTo(x2, y2);
+
+                    }
+                    else {
+                        const x3 = x + r * Math.cos(theta + Math.PI * 2 / 3);
+                        const y3 = y + r * Math.sin(theta + Math.PI * 2 / 3);
+                        oCtx.moveTo(startX, startY);
+                        oCtx.lineTo(x, y);
+                        oCtx.lineTo(x3, y3);
+                    }
+
+                    oCtx.fill();
+                }
             }
 
         }

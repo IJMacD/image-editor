@@ -4,6 +4,7 @@ export enum ActionTypes {
   NEW_DOCUMENT = "project/newDocument",
   NEW_LAYER = "project/newLayer",
   EDIT_LAYER = "project/editLayer",
+  DELETE_LAYER = "project/delteLayer",
   EDIT_COMPOSITE_LAYER = "project/editCompositeLayer",
   NEW_COMPOSITION = "project/newComposition",
 }
@@ -13,6 +14,7 @@ type NewCompositionAction = { type: ActionTypes.NEW_COMPOSITION };
 type NewLayerAction = {
   type: ActionTypes.NEW_LAYER;
   payload: {
+    id: number,
     name?: string;
     x?: number;
     y?: number;
@@ -35,12 +37,18 @@ type EditCompositeLayerAction = {
   };
 };
 
+type DeleteLayerAction = {
+  type: ActionTypes.DELETE_LAYER,
+  payload: { id: number }
+}
+
 export type Action =
   | NewDocumentAction
   | NewCompositionAction
   | NewLayerAction
   | EditLayerAction
-  | EditCompositeLayerAction;
+  | EditCompositeLayerAction
+  | DeleteLayerAction;
 
 export function newDocument(): NewDocumentAction {
   return {
@@ -48,10 +56,10 @@ export function newDocument(): NewDocumentAction {
   };
 }
 
-export function newLayer(): NewLayerAction {
+export function newLayer(id: number): NewLayerAction {
   return {
     type: ActionTypes.NEW_LAYER,
-    payload: {},
+    payload: { id },
   };
 }
 
@@ -79,4 +87,11 @@ export function editCompositeLayer(
     type: ActionTypes.EDIT_COMPOSITE_LAYER,
     payload: { compositeLayer, properties },
   };
+}
+
+export function deleteLayer(id: number): DeleteLayerAction {
+  return {
+    type: ActionTypes.DELETE_LAYER,
+    payload: { id },
+  }
 }
