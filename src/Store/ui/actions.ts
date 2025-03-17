@@ -1,7 +1,8 @@
 export enum ActionTypes {
   SET_TOOL = "ui/setTool",
   SET_TOOL_COLOR = "ui/setToolColor",
-  SET_TOOL_WIDTH = "ui/setToolWidth",
+  SET_TOOL_SIZE = "ui/setToolSize",
+  ADJUST_TOOL_SIZE = "ui/adjustToolSize",
 }
 
 type SetToolAction = {
@@ -14,12 +15,17 @@ type SetToolColorAction = {
   payload: { color: string };
 };
 
-type SetToolWidthAction = {
-  type: ActionTypes.SET_TOOL_WIDTH;
-  payload: { width: number };
+type SetToolSizeAction = {
+  type: ActionTypes.SET_TOOL_SIZE;
+  payload: { size: number };
 };
 
-export type Action = SetToolAction | SetToolColorAction | SetToolWidthAction;
+type AdjustToolSizeAction = {
+  type: ActionTypes.ADJUST_TOOL_SIZE;
+  payload: { change: number };
+};
+
+export type Action = SetToolAction | SetToolColorAction | SetToolSizeAction | AdjustToolSizeAction;
 
 export function setTool(tool: string): SetToolAction {
   return {
@@ -34,9 +40,23 @@ export function setToolColor(color: string): SetToolColorAction {
   };
 }
 
-export function setToolWidth(width: number): SetToolWidthAction {
+export function setToolSize(size: number): SetToolSizeAction {
   return {
-    type: ActionTypes.SET_TOOL_WIDTH,
-    payload: { width },
+    type: ActionTypes.SET_TOOL_SIZE,
+    payload: { size },
+  };
+}
+
+export function increaseToolSize(change: number = 1): AdjustToolSizeAction {
+  return {
+    type: ActionTypes.ADJUST_TOOL_SIZE,
+    payload: { change },
+  };
+}
+
+export function decreaseToolSize(change: number = 1): AdjustToolSizeAction {
+  return {
+    type: ActionTypes.ADJUST_TOOL_SIZE,
+    payload: { change: -change },
   };
 }

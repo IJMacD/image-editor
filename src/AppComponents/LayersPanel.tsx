@@ -11,18 +11,20 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
     ...compositions.map((_, i) => `Output ${i}`),
   ];
 
+  const className = 'bg-white flex-2 h-full p-4 flex place-items-center justify-center';
+
   return (
     <TabPanel labels={layerLabels}>
       {
         layers.map((layer) =>
-          <div key={layer.id} className='bg-white flex-2 h-full p-4'>
+          <div key={layer.id} className={className}>
             <CanvasPanel canvas={layer.canvas} editableLayer={layer} />
           </div>
         )
       }
       {
         compositions.map((composition, i) => (
-          <div key={i} className='bg-white flex-2 h-full p-4'>
+          <div key={i} className={className}>
             <CompositionPanel composition={composition} project={project} />
           </div>
         ))

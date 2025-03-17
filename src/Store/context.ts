@@ -4,4 +4,4 @@ import { AppState, defaultAppState } from "./reducer";
 
 export const StoreContext = createContext<AppState>(defaultAppState);
 
-export const DispatchContext = createContext<Dispatch<Action>>(() => void 0);
+export const DispatchContext = createContext<Dispatch<Action>>(() => { console.warn("not real dispatch"); });

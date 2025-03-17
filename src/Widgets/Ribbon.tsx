@@ -3,23 +3,25 @@ import { RibbonTab, RibbonTabProps } from "./RibbonTab";
 
 export function Ribbon ({ children }: { children: React.ReactNode }) {
   const tabs = getTabs(children);
+  const tabKeys = Object.keys(tabs);
+  const firstTabKey = tabKeys[0];
 
-  const [selectedTabID, setSelectedTabID] = useState(Object.keys(tabs)[0]);
+  const [selectedTabID, setSelectedTabID] = useState(firstTabKey);
 
   const selectedTab = tabs[selectedTabID]?.element;
 
-  const tabMode = Object.keys(tabs).length > 0;
+  const tabMode = tabKeys.length > 0;
 
   const tabAvailable = !!selectedTab;
 
   useEffect(() => {
     if (!tabAvailable && tabMode) {
-      setSelectedTabID(Object.keys(tabs)[0]);
+      setSelectedTabID(firstTabKey);
     }
-  }, [tabAvailable, tabMode]);
+  }, [tabAvailable, tabMode, firstTabKey]);
 
   return (
-    <div className="border-b-1 border-gray-300 shadow-lg z-1 flex flex-col">
+    <div className="border-b-1 border-gray-300 shadow-lg z-1 flex flex-col select-none">
       { tabMode &&
         <ul className="pt-2 border-b-1 min-h-8 ">
           {

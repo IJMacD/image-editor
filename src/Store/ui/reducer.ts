@@ -5,8 +5,16 @@ export type UIState = {
   tool: string;
   toolOptions: {
     color: string;
-    width: number;
+    size: number;
   };
+};
+
+export const defaultUIState: UIState = {
+  tool: "pencil",
+  toolOptions: {
+    color: "black",
+    size: 1,
+  },
 };
 
 export function uiReducer(state: UIState, action: Action): UIState {
@@ -21,10 +29,15 @@ export function uiReducer(state: UIState, action: Action): UIState {
         ...state,
         toolOptions: { ...state.toolOptions, color: action.payload.color },
       };
-    case ActionTypes.SET_TOOL_WIDTH:
+    case ActionTypes.SET_TOOL_SIZE:
       return {
         ...state,
-        toolOptions: { ...state.toolOptions, width: action.payload.width },
+        toolOptions: { ...state.toolOptions, size: Math.max(action.payload.size, 1) },
+      };
+    case ActionTypes.ADJUST_TOOL_SIZE:
+      return {
+        ...state,
+        toolOptions: { ...state.toolOptions, size: Math.max(state.toolOptions.size + action.payload.change, 1) },
       };
   }
   return state;

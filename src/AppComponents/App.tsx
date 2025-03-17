@@ -7,9 +7,12 @@ import { StoreContext, DispatchContext } from '../Store/context'
 import { LayersPanel } from './LayersPanel'
 import { CompositionTreePanel } from './CompositionTreePanel'
 import { ToolSelector } from './ToolSelector'
+import { useKeyboardShortcuts } from '../Hooks/useKeyboardShortcuts'
 
 function App() {
   const [store, dispatch] = useReducer(rootReducer, defaultAppState);
+
+  useKeyboardShortcuts(dispatch);
 
   return (
     <StoreContext.Provider value={store}>

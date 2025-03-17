@@ -2,7 +2,7 @@ import type { Reducer } from "react";
 import type { Action } from "./actions";
 import { projectReducer } from "./project/reducer";
 import type { ImageProject } from "../types";
-import { uiReducer, UIState } from "./ui/reducer";
+import { defaultUIState, uiReducer, UIState } from "./ui/reducer";
 
 export type AppState = {
   project: ImageProject | null;
@@ -10,13 +10,6 @@ export type AppState = {
 };
 // export type AppState = ReturnType<typeof rootReducer>;
 
-const defaultUIState: UIState = {
-  tool: "pencil",
-  toolOptions: {
-    color: "black",
-    width: 1,
-  },
-};
 
 export const defaultAppState = {
   project: null,

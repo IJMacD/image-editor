@@ -6,7 +6,7 @@ import { StoreContext, DispatchContext } from "../Store/context";
 import { newComposition, newDocument, newLayer } from "../Store/project/actions";
 import { RibbonTab } from "../Widgets/RibbonTab";
 import { selectProject } from "../Store/project/selectors";
-import { setToolColor, setToolWidth } from "../Store/ui/actions";
+import { setToolColor, setToolSize } from "../Store/ui/actions";
 
 export function AppRibbon () {
   const store = useContext(StoreContext);
@@ -15,12 +15,12 @@ export function AppRibbon () {
   const project = selectProject(store);
 
   const toolColor = store.ui.toolOptions.color;
-  const toolWidth = store.ui.toolOptions.width;
+  const toolSize = store.ui.toolOptions.size;
 
   return (
     <Ribbon>
       <RibbonTab id="file" label="File">
-        <RibbonButton icon="🗋" label="New" onClick={() => dispatch(newDocument())} disabled={!!project} />
+        <RibbonButton icon="📄" label="New" onClick={() => dispatch(newDocument())} disabled={!!project} />
         <RibbonButton icon="📂" label="Open" />
         <RibbonButton icon="💾" label="Save" disabled={!project} />
         <RibbonDivider />
@@ -34,10 +34,13 @@ export function AppRibbon () {
         <RibbonTab id="pencil" label="Pencil">
           <label>
             Thickness<br/>
-            <input type="number" min={1} value={toolWidth} onChange={e => dispatch(setToolWidth(e.target.valueAsNumber))} />
+              <input type="number" min={1} value={toolSize} onChange={e => dispatch(setToolSize(e.target.valueAsNumber))} className="border w-24" />
           </label>
           <RibbonDivider />
-          <input type="color" value={toolColor} onChange={e => dispatch(setToolColor(e.target.value))} />
+            <label>
+              Pencil Colour <br />
+              <input type="color" value={toolColor} onChange={e => dispatch(setToolColor(e.target.value))} />
+            </label>
         </RibbonTab>
       }
       {

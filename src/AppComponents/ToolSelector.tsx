@@ -9,8 +9,8 @@ export function ToolSelector () {
   const tool = store.ui.tool;
 
   const tools = {
-    "pencil": "🖉",
-    "shapes": "○",
+    "pencil": "✏️",
+    "shapes": "🔴",
     "fill": "🪣",
   }
 
