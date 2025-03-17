@@ -1,53 +1,54 @@
 import { useContext } from "react";
 import { CompositeLayer, ImageProject } from "../types";
-import { getLayerByID } from "../util/project";
+import { getLayerByID, isCompositeLayer } from "../util/project";
 import { DispatchContext } from "../Store/context";
-import { deleteLayer, editCompositeLayer, editLayer } from "../Store/project/actions";
+import { deleteLayer, editBaseLayer, editCompositeLayerInput } from "../Store/project/actions";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
   return (
     <ul className="bg-white p-4">
       {
-        project.compositions.map((c, i) => (
+        project.compositions.map((id, i) => {
+          const compositeLayer = project.layers.find(l => l.id === id && isCompositeLayer(l)) as CompositeLayer|undefined;
+        return (
           <li key={i}>
             <b>Output {i}</b>
-            <CompositionTree composition={c} project={project} />
+            { compositeLayer ? <CompositionTree compositeLayer={compositeLayer} project={project} /> : <li key={i} className="text-red">Cannot find layer</li>}
           </li>
-        ))
+        )})
       }
     </ul>
   )
 }
 
-function CompositionTree ({ composition, project }: { composition: CompositeLayer, project: ImageProject }) {
+function CompositionTree ({ compositeLayer, project }: { compositeLayer: CompositeLayer, project: ImageProject }) {
   const dispatch = useContext(DispatchContext);
 
-  function handleEditComposition () {
-    const operation = prompt("Composition type:", composition.operation);
+  function handleEditComposition (index: number) {
+    const operation = prompt("Composition type:", compositeLayer.inputs[index].operation);
     if (operation) {
-      dispatch(editCompositeLayer(composition, { operation: operation as GlobalCompositeOperation }));
+      dispatch(editCompositeLayerInput(compositeLayer.id, index, { operation: operation as GlobalCompositeOperation }));
     }
   }
 
   return (
     <div>
       <div className="flex place-items-center">
-        <span className="flex-1">Composition: {composition.operation}</span>
-        <button onClick={handleEditComposition}>✎</button>
+        {/* <span className="flex-1">Composition: {composition.operation}</span> */}
+        {/* <button onClick={handleEditComposition}>✎</button> */}
       </div>
       <ul className="list-disc ml-4">
 
         {
-          composition.inputs.map((input, i) => {
-            if (typeof input === "number") {
-              const layer = getLayerByID(project.layers, input);
+          compositeLayer.inputs.map((input, i) => {
+              const layer = getLayerByID(project.layers, input.id);
               if (layer) {
                 const l = layer;
 
                 function handleRename () {
                   const name = prompt("Enter name", l.name);
                   if (name) {
-                    dispatch(editLayer(l.id, { name }))
+                    dispatch(editBaseLayer(l.id, { name }))
                   }
                 }
 
@@ -60,14 +61,15 @@ function CompositionTree ({ composition, project }: { composition: CompositeLaye
                 return (
                   <li key={i} className="flex place-items-center">
                     <span className="flex-1">{layer.name}</span>
+                    <span className="flex-1" onClick={() => handleEditComposition(i)}>{input.operation}</span>
                     <button onClick={handleRename}>✎</button>
                     <button onClick={handleDelete}>🗑️</button>
+                    { isCompositeLayer(layer) && <CompositionTree compositeLayer={layer} project={project} />}
                   </li>
                 );
               }
+
               return <li key={i} className="text-red">Cannot find layer</li>;
-            }
-            return <CompositionTree key={i} composition={input} project={project} />;
           })
         }
       </ul>

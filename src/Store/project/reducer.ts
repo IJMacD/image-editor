@@ -1,4 +1,5 @@
-import { CompositeLayer, ImageProject } from "../../types";
+import { BaseLayer, ImageProject } from "../../types";
+import { getNextLayerID, isCompositeLayer } from "../../util/project";
 import { Action } from "../actions";
 import { ActionTypes } from "./actions";
 
@@ -7,21 +8,32 @@ type ProjectState = ImageProject | null;
 const width = 512;
 const height = 512;
 
-export const defaultProjectState = {
+export const defaultProjectState: ImageProject = {
   layers: [
+    {
+      id: 0,
+      name: "Output 0",
+      width,
+      height,
+      inputs: [
+        {
+          id: 1,
+          x: 0,
+          y: 0,
+          operation: "source-over" as GlobalCompositeOperation,
+          parameters: {},
+        },
+      ],
+    },
     {
       id: 1,
       name: "Layer 1",
-      x: 0,
-      y: 0,
       width,
       height,
       canvas: null,
     },
   ],
-  compositions: [
-    { inputs: [1], operation: "source-over" as GlobalCompositeOperation, parameters: {} },
-  ],
+  compositions: [0],
   width,
   height,
 };
@@ -40,55 +52,71 @@ export function projectReducer(
       if (state) {
         const { width, height } = state;
 
-        const { id } = action.payload;  
+        const { id } = action.payload;
 
-        const newLayer = {
+        const newLayer: BaseLayer = {
           name: `Layer ${id}`,
-          x: 0,
-          y: 0,
           width,
           height,
+          canvas: null,
           ...action.payload,
         };
 
-        const compositions = [
-          {
-            ...state.compositions[0],
-            inputs: [...state.compositions[0].inputs, id],
-          },
-          ...state.compositions.slice(1),
-        ];
+        const firstComposition = state.layers.find(
+          (l) => l.id === state.compositions[0]
+        );
 
         return {
           ...state,
           layers: [
-            ...state.layers,
+            ...state.layers.map((l) =>
+              l === firstComposition && "inputs" in l
+                ? {
+                    ...l,
+                    inputs: [
+                      ...l.inputs,
+                      {
+                        id,
+                        x: 0,
+                        y: 0,
+                        operation: "source-over" as GlobalCompositeOperation,
+                        parameters: {},
+                      },
+                    ],
+                  }
+                : l
+            ),
             {
               ...newLayer,
               canvas: null,
             },
           ],
-          compositions,
         };
       }
       break;
     case ActionTypes.NEW_COMPOSITION:
-      return (
-        state && {
-          ...state,
-          compositions: [
-            ...state.compositions,
-            { inputs: [], operation: "source-over", parameters: {} },
-          ],
-        }
-      );
+      if (state) {
+        const id = getNextLayerID(state);
+        const { width, height } = state;
+        return (
+          state && {
+            ...state,
+            layers: [
+              ...state.layers,
+              { id, name: `Output ${id}`, width, height, inputs: [] },
+            ],
+            compositions: [...state.compositions, id],
+          }
+        );
+      }
+      break;
 
     case ActionTypes.EDIT_LAYER:
       return (
         state && {
           ...state,
           layers: state.layers.map((l) =>
-            l.id === action.payload.layerID
+            l.id === action.payload.id
               ? {
                   ...l,
                   ...action.payload.properties,
@@ -97,15 +125,35 @@ export function projectReducer(
           ),
         }
       );
-
     case ActionTypes.EDIT_COMPOSITE_LAYER:
       return (
         state && {
           ...state,
-          compositions: replaceComposition(
-            state.compositions,
-            action.payload.compositeLayer,
-            action.payload.properties
+          layers: state.layers.map((l) =>
+            l.id === action.payload.id
+              ? {
+                  ...l,
+                  ...action.payload.properties,
+                }
+              : l
+          ),
+        }
+      );
+    case ActionTypes.EDIT_COMPOSITE_LAYER_INPUT:
+      return (
+        state && {
+          ...state,
+          layers: state.layers.map((l) =>
+            l.id === action.payload.id && isCompositeLayer(l)
+              ? {
+                  ...l,
+                  inputs: l.inputs.map((input, i) =>
+                    i === action.payload.index
+                      ? { ...input, ...action.payload.properties }
+                      : input
+                  ),
+                }
+              : l
           ),
         }
       );
@@ -114,52 +162,24 @@ export function projectReducer(
       return (
         state && {
           ...state,
-          layers: state.layers.filter(l => l.id !== action.payload.id),
-          compositions: removeLayerFromCompositions(state.compositions, action.payload.id),
+          layers: state.layers
+            .filter((l) => l.id !== action.payload.id)
+            .map((l) =>
+              "inputs" in l &&
+              l.inputs.some((input) => input.id === action.payload.id)
+                ? {
+                    ...l,
+                    inputs: l.inputs.filter(
+                      (input) => input.id !== action.payload.id
+                    ),
+                  }
+                : l
+            ),
+          compositions: state.compositions.filter(
+            (id) => id !== action.payload.id
+          ),
         }
-      )
+      );
   }
   return state;
-}
-
-function replaceComposition(
-  compositions: CompositeLayer[],
-  compositeLayer: CompositeLayer,
-  properties: Partial<Omit<CompositeLayer, "inputs">>
-): CompositeLayer[] {
-  return compositions.map((c) => {
-    if (c === compositeLayer) {
-      return { ...compositeLayer, ...properties };
-    }
-    return {
-      ...c,
-      inputs: replaceCompositionInner(c.inputs, compositeLayer, properties),
-    };
-  });
-}
-
-function replaceCompositionInner(
-  compositions: (CompositeLayer | number)[],
-  compositeLayer: CompositeLayer,
-  properties: Partial<Omit<CompositeLayer, "inputs">>
-): (CompositeLayer | number)[] {
-  return compositions.map((c) => {
-    if (typeof c === "number") {
-      return c;
-    }
-    if (c === compositeLayer) {
-      return { ...compositeLayer, ...properties };
-    }
-    return {
-      ...c,
-      inputs: replaceCompositionInner(c.inputs, compositeLayer, properties),
-    };
-  });
-}
-
-function removeLayerFromCompositions(compositions: CompositeLayer[], layerID: number): CompositeLayer[] {
-  return compositions.map(c => ({
-    ...c,
-    inputs: c.inputs.map(cc => typeof cc === "number" ? cc : removeLayerFromCompositions([cc], layerID)[0]).filter(i => i !== layerID),
-  }))
 }

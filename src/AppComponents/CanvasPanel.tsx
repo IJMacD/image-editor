@@ -1,9 +1,10 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { StoreContext, DispatchContext } from "../Store/context";
-import { editLayer } from "../Store/project/actions";
+import { editBaseLayer } from "../Store/project/actions";
 import { Layer } from "../types";
 import { Editor } from "../Editor";
 import checkerBoard from "../assets/bg.png";
+import { isBaseLayer } from "../util/project";
 
 export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElement|null, editableLayer?: Layer }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -71,9 +72,9 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
   }, [isMouseDown]);
 
   const handleMouseUp = useCallback(() => {
-    if (isMouseDown && editableLayer && canvasRef.current) {
+    if (isMouseDown && editableLayer && isBaseLayer(editableLayer) && canvasRef.current) {
       editorRef.current.mouseUp();
-      dispatch(editLayer(editableLayer.id, { canvas: canvasRef.current }));
+      dispatch(editBaseLayer(editableLayer.id, { canvas: canvasRef.current }));
       setIsMouseDown(false);
     }
   }, [isMouseDown, editableLayer, dispatch]);

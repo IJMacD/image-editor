@@ -5,6 +5,7 @@ import { CanvasPanel } from "./CanvasPanel";
 import { CompositionPanel } from "./CompositionPanel";
 import { DispatchContext, StoreContext } from "../Store/context";
 import { setActiveLayer } from "../Store/ui/actions";
+import { isCompositeLayer } from "../util/project";
 
 export function LayersPanel ({ project }: { project: ImageProject}) {
   const store = useContext(StoreContext);
@@ -52,16 +53,13 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
       {
         layers.map((layer) =>
           <div key={layer.id} className={className}>
-            <CanvasPanel canvas={layer.canvas} editableLayer={layer} />
+            {
+              isCompositeLayer(layer) ?
+              <CompositionPanel compositeLayer={layer} project={project} /> :
+              <CanvasPanel canvas={layer.canvas} editableLayer={layer} />
+            }
           </div>
         )
-      }
-      {
-        compositions.map((composition, i) => (
-          <div key={i} className={className}>
-            <CompositionPanel composition={composition} project={project} />
-          </div>
-        ))
       }
     </TabPanel>
   )

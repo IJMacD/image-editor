@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { CompositeLayer, ImageProject } from "../types";
-import { getLayerByID } from "../util/project";
+import { getLayerByID, isCompositeLayer } from "../util/project";
 
 export function useCompositionRenderer(
-  composition: CompositeLayer,
+  compositeLayer: CompositeLayer,
   project: ImageProject
 ) {
   const { layers } = project;
@@ -13,34 +13,33 @@ export function useCompositionRenderer(
     canvas.width = project.width;
     canvas.height = project.height;
 
-    if (composition) {
-      renderToCanvas(canvas, composition, project);
+    if (compositeLayer) {
+      renderToCanvas(canvas, compositeLayer, project);
     }
 
     return canvas;
-  }, [layers, composition]);
+  }, [layers, compositeLayer]);
 }
 
 function renderToCanvas(
   canvas: HTMLCanvasElement,
-  input: CompositeLayer | number,
+  layer: CompositeLayer,
   project: ImageProject
 ) {
   const ctx = canvas.getContext("2d");
 
   if (!ctx) return;
 
-  if (typeof input === "number") {
-    const layer = getLayerByID(project.layers, input);
-    if (layer?.canvas) {
-      ctx.drawImage(layer.canvas, layer.x, layer.y);
+  for (const c of layer.inputs) {
+    const layer = getLayerByID(project.layers, c.id);
+    ctx.globalCompositeOperation = c.operation;
+
+    if (layer) {
+      if (isCompositeLayer(layer)) {
+        renderToCanvas(canvas, layer, project);
+      } else if (layer.canvas) {
+        ctx.drawImage(layer.canvas, c.x, c.y);
+      }
     }
-    return;
-  }
-
-  ctx.globalCompositeOperation = input.operation;
-
-  for (const c of input.inputs) {
-    renderToCanvas(canvas, c, project);
   }
 }

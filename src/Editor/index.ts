@@ -12,7 +12,10 @@ export class Editor {
     #firstPoint: Point = { x: 0, y: 0 };
     #prevPoint: Point = { x: 0, y: 0 };
 
-    setCanvases(canvas: HTMLCanvasElement | null, overlayCanvas: HTMLCanvasElement | null) {
+    setCanvases(
+        canvas: HTMLCanvasElement | null,
+        overlayCanvas: HTMLCanvasElement | null
+    ) {
         this.#canvas = canvas;
         this.#overlayCanvas = overlayCanvas;
     }
@@ -22,7 +25,7 @@ export class Editor {
         this.#toolOptions = toolOptions;
     }
 
-    mouseDown(mousePos: Point, mouseEvent: MouseEvent) {
+    mouseDown(mousePos: Point, _mouseEvent: MouseEvent) {
         this.#firstPoint = mousePos;
         this.#prevPoint = mousePos;
     }
@@ -43,33 +46,32 @@ export class Editor {
             return;
         }
 
-        const { x: prevX, y: prevY } = this.#prevPoint
+        const { x: prevX, y: prevY } = this.#prevPoint;
 
         switch (this.#tool) {
-            case "pencil": {
-                const toolStrokeColor = this.#toolOptions.strokeColor;
-                const toolSize = this.#toolOptions.size;
+            case "pencil":
+                {
+                    const toolStrokeColor = this.#toolOptions.strokeColor;
+                    const toolSize = this.#toolOptions.size;
 
-                ctx.beginPath();
-                ctx.moveTo(prevX, prevY);
-                ctx.lineTo(mousePos.x, mousePos.y);
+                    ctx.beginPath();
+                    ctx.moveTo(prevX, prevY);
+                    ctx.lineTo(mousePos.x, mousePos.y);
 
-                ctx.strokeStyle = toolStrokeColor;
-                ctx.lineWidth = toolSize;
-                ctx.lineCap = "round"
-                ctx.stroke();
-            }
+                    ctx.strokeStyle = toolStrokeColor;
+                    ctx.lineWidth = toolSize;
+                    ctx.lineCap = "round";
+                    ctx.stroke();
+                }
                 break;
             case "shapes": {
                 const toolFillColor = this.#toolOptions.color;
                 const toolStrokeColor = this.#toolOptions.strokeColor;
                 const toolSize = this.#toolOptions.size;
 
-                const isFill = ["fill", "both"].includes(
-                  this.#toolOptions.fillStroke
-                );
+                const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);
                 const isStroke = ["stroke", "both"].includes(
-                  this.#toolOptions.fillStroke
+                    this.#toolOptions.fillStroke
                 );
                 const shape = this.#toolOptions.shape;
 
@@ -96,13 +98,7 @@ export class Editor {
                     if (mouseEvent.shiftKey) {
                         oCtx.arc(startX, startY, r, 0, Math.PI * 2);
                     } else {
-                        oCtx.arc(
-                            (startX + x) / 2,
-                            (startY + y) / 2,
-                            r / 2,
-                            0,
-                            Math.PI * 2
-                        );
+                        oCtx.arc((startX + x) / 2, (startY + y) / 2, r / 2, 0, Math.PI * 2);
                     }
 
                     isFill && oCtx.fill();
@@ -157,7 +153,6 @@ export class Editor {
                     isStroke && oCtx.stroke();
                 }
             }
-
         }
 
         this.#prevPoint = mousePos;
@@ -172,7 +167,7 @@ export class Editor {
             const ctx = this.#canvas.getContext("2d");
 
             if (!ctx) {
-                return
+                return;
             }
 
             ctx.drawImage(this.#overlayCanvas, 0, 0);

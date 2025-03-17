@@ -2,21 +2,29 @@ export interface ImageProject {
   layers: Layer[];
   width: number;
   height: number;
-  compositions: CompositeLayer[];
+  compositions: number[];
 }
 
-export interface Layer {
+export type Layer = BaseLayer | CompositeLayer;
+
+export interface BaseLayer {
   id: number;
   name: string;
-  x: number;
-  y: number;
   width: number;
   height: number;
   canvas: HTMLCanvasElement | null;
 }
 
 export interface CompositeLayer {
-  inputs: (CompositeLayer | number)[];
-  operation: GlobalCompositeOperation;
-  parameters: object;
+  id: number;
+  name: string;
+  width: number;
+  height: number;
+  inputs: {
+    id: number;
+    x: number;
+    y: number;
+    operation: GlobalCompositeOperation;
+    parameters: object;
+  }[];
 }

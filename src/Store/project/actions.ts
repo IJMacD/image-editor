@@ -1,11 +1,12 @@
-import { CompositeLayer, Layer } from "../../types";
+import { BaseLayer, CompositeLayer } from "../../types";
 
 export enum ActionTypes {
   NEW_DOCUMENT = "project/newDocument",
   NEW_LAYER = "project/newLayer",
   EDIT_LAYER = "project/editLayer",
-  DELETE_LAYER = "project/delteLayer",
+  DELETE_LAYER = "project/deleteLayer",
   EDIT_COMPOSITE_LAYER = "project/editCompositeLayer",
+  EDIT_COMPOSITE_LAYER_INPUT = "project/editCompositeLayerInput",
   NEW_COMPOSITION = "project/newComposition",
 }
 
@@ -14,7 +15,7 @@ type NewCompositionAction = { type: ActionTypes.NEW_COMPOSITION };
 type NewLayerAction = {
   type: ActionTypes.NEW_LAYER;
   payload: {
-    id: number,
+    id: number;
     name?: string;
     x?: number;
     y?: number;
@@ -22,32 +23,49 @@ type NewLayerAction = {
     height?: number;
   };
 };
-type EditLayerAction = {
+type EditBaseLayerAction = {
   type: ActionTypes.EDIT_LAYER;
   payload: {
-    layerID: number;
-    properties: Partial<Omit<Layer, "id">>;
+    id: number;
+    properties: Partial<Omit<BaseLayer, "id">>;
   };
 };
+
 type EditCompositeLayerAction = {
   type: ActionTypes.EDIT_COMPOSITE_LAYER;
   payload: {
-    compositeLayer: CompositeLayer;
+    id: number;
     properties: Partial<Omit<CompositeLayer, "inputs">>;
   };
 };
 
+type EditCompositeLayerInputAction = {
+  type: ActionTypes.EDIT_COMPOSITE_LAYER_INPUT;
+  payload: {
+    id: number;
+    index: number;
+    properties: Partial<{
+      id: number;
+      x: number;
+      y: number;
+      operation: GlobalCompositeOperation;
+      parameters: object;
+    }>;
+  };
+};
+
 type DeleteLayerAction = {
-  type: ActionTypes.DELETE_LAYER,
-  payload: { id: number }
-}
+  type: ActionTypes.DELETE_LAYER;
+  payload: { id: number };
+};
 
 export type Action =
   | NewDocumentAction
   | NewCompositionAction
   | NewLayerAction
-  | EditLayerAction
+  | EditBaseLayerAction
   | EditCompositeLayerAction
+  | EditCompositeLayerInputAction
   | DeleteLayerAction;
 
 export function newDocument(): NewDocumentAction {
@@ -63,13 +81,13 @@ export function newLayer(id: number): NewLayerAction {
   };
 }
 
-export function editLayer(
-  layerID: number,
-  properties: Partial<Omit<Layer, "id">>
-): EditLayerAction {
+export function editBaseLayer(
+  id: number,
+  properties: Partial<Omit<BaseLayer, "id">>
+): EditBaseLayerAction {
   return {
     type: ActionTypes.EDIT_LAYER,
-    payload: { layerID, properties },
+    payload: { id, properties },
   };
 }
 
@@ -80,12 +98,22 @@ export function newComposition(): NewCompositionAction {
 }
 
 export function editCompositeLayer(
-  compositeLayer: CompositeLayer,
+  id: number,
   properties: Partial<Omit<CompositeLayer, "inputs">>
 ): EditCompositeLayerAction {
   return {
     type: ActionTypes.EDIT_COMPOSITE_LAYER,
-    payload: { compositeLayer, properties },
+    payload: { id, properties },
+  };
+}
+export function editCompositeLayerInput(
+  id: number,
+  index: number,
+  properties: any
+): EditCompositeLayerInputAction {
+  return {
+    type: ActionTypes.EDIT_COMPOSITE_LAYER_INPUT,
+    payload: { id, index, properties },
   };
 }
 
@@ -93,5 +121,5 @@ export function deleteLayer(id: number): DeleteLayerAction {
   return {
     type: ActionTypes.DELETE_LAYER,
     payload: { id },
-  }
+  };
 }
