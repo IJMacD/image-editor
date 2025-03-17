@@ -47,25 +47,42 @@ export class Editor {
 
         switch (this.#tool) {
             case "pencil": {
-                const toolColor = this.#toolOptions.color;
+                const toolStrokeColor = this.#toolOptions.strokeColor;
                 const toolSize = this.#toolOptions.size;
 
                 ctx.beginPath();
                 ctx.moveTo(prevX, prevY);
                 ctx.lineTo(mousePos.x, mousePos.y);
 
-                ctx.strokeStyle = toolColor;
+                ctx.strokeStyle = toolStrokeColor;
                 ctx.lineWidth = toolSize;
                 ctx.lineCap = "round"
                 ctx.stroke();
             }
                 break;
             case "shapes": {
-                const toolColor = this.#toolOptions.color;
+                const toolFillColor = this.#toolOptions.color;
+                const toolStrokeColor = this.#toolOptions.strokeColor;
+                const toolSize = this.#toolOptions.size;
+
+                const isFill = ["fill", "both"].includes(
+                  this.#toolOptions.fillStroke
+                );
+                const isStroke = ["stroke", "both"].includes(
+                  this.#toolOptions.fillStroke
+                );
                 const shape = this.#toolOptions.shape;
 
-                oCtx.clearRect(0, 0, this.#overlayCanvas.width, this.#overlayCanvas.height);
-                oCtx.fillStyle = toolColor;
+                oCtx.clearRect(
+                    0,
+                    0,
+                    this.#overlayCanvas.width,
+                    this.#overlayCanvas.height
+                );
+
+                oCtx.fillStyle = toolFillColor;
+                oCtx.strokeStyle = toolStrokeColor;
+                oCtx.lineWidth = toolSize;
 
                 const { x, y } = mousePos;
                 const { x: startX, y: startY } = this.#firstPoint;
@@ -78,37 +95,39 @@ export class Editor {
 
                     if (mouseEvent.shiftKey) {
                         oCtx.arc(startX, startY, r, 0, Math.PI * 2);
-                    }
-                    else {
-                        oCtx.arc((startX + x) / 2, (startY + y) / 2, r / 2, 0, Math.PI * 2);
+                    } else {
+                        oCtx.arc(
+                            (startX + x) / 2,
+                            (startY + y) / 2,
+                            r / 2,
+                            0,
+                            Math.PI * 2
+                        );
                     }
 
-                    oCtx.fill();
-                }
-                else if (shape === "rectangle") {
+                    isFill && oCtx.fill();
+                    isStroke && oCtx.stroke();
+                } else if (shape === "rectangle") {
                     oCtx.beginPath();
                     if (mouseEvent.shiftKey) {
-
                         if (mouseEvent.ctrlKey) {
                             const d = (dx + dy) / 2;
-                            oCtx.fillRect(startX - d, startY - d, d * 2, d * 2);
+                            oCtx.rect(startX - d, startY - d, d * 2, d * 2);
+                        } else {
+                            oCtx.rect(startX - dx, startY - dy, dx * 2, dy * 2);
                         }
-                        else {
-                            oCtx.fillRect(startX - dx, startY - dy, dx * 2, dy * 2);
-                        }
-                    }
-                    else {
-
+                    } else {
                         if (mouseEvent.ctrlKey) {
                             const d = (dx + dy) / 2;
-                            oCtx.fillRect(startX, startY, d, d);
-                        }
-                        else {
-                            oCtx.fillRect(startX, startY, dx, dy);
+                            oCtx.rect(startX, startY, d, d);
+                        } else {
+                            oCtx.rect(startX, startY, dx, dy);
                         }
                     }
-                }
-                else if (shape === "triangle") {
+
+                    isFill && oCtx.fill();
+                    isStroke && oCtx.stroke();
+                } else if (shape === "triangle") {
                     const r = Math.sqrt(dx * dx + dy * dy);
                     const theta = Math.atan2(dy, dx);
 
@@ -117,29 +136,29 @@ export class Editor {
                     if (mouseEvent.shiftKey) {
                         oCtx.moveTo(x, y);
 
-                        const x1 = startX + r * Math.cos(theta + Math.PI * 2 / 3);
-                        const y1 = startY + r * Math.sin(theta + Math.PI * 2 / 3);
+                        const x1 = startX + r * Math.cos(theta + (Math.PI * 2) / 3);
+                        const y1 = startY + r * Math.sin(theta + (Math.PI * 2) / 3);
                         oCtx.lineTo(x1, y1);
 
-                        const x2 = startX + r * Math.cos(theta + Math.PI * 4 / 3);
-                        const y2 = startY + r * Math.sin(theta + Math.PI * 4 / 3);
+                        const x2 = startX + r * Math.cos(theta + (Math.PI * 4) / 3);
+                        const y2 = startY + r * Math.sin(theta + (Math.PI * 4) / 3);
                         oCtx.lineTo(x2, y2);
-
-                    }
-                    else {
-                        const x3 = x + r * Math.cos(theta + Math.PI * 2 / 3);
-                        const y3 = y + r * Math.sin(theta + Math.PI * 2 / 3);
+                        oCtx.closePath();
+                    } else {
+                        const x3 = x + r * Math.cos(theta + (Math.PI * 2) / 3);
+                        const y3 = y + r * Math.sin(theta + (Math.PI * 2) / 3);
                         oCtx.moveTo(startX, startY);
                         oCtx.lineTo(x, y);
                         oCtx.lineTo(x3, y3);
+                        oCtx.closePath();
                     }
 
-                    oCtx.fill();
+                    isFill && oCtx.fill();
+                    isStroke && oCtx.stroke();
                 }
             }
 
         }
-
 
         this.#prevPoint = mousePos;
     }

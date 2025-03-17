@@ -3,6 +3,7 @@ import { StoreContext, DispatchContext } from "../Store/context";
 import { editLayer } from "../Store/project/actions";
 import { Layer } from "../types";
 import { Editor } from "../Editor";
+import checkerBoard from "../assets/bg.png";
 
 export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElement|null, editableLayer?: Layer }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -96,6 +97,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
     <div
       className="m-4 relative border-1 inline-block"
       onMouseDown={handleMouseDown}
+      style={{backgroundImage: `url(${checkerBoard})`}}
     >
       <canvas
         ref={canvasRef}
