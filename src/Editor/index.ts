@@ -255,4 +255,28 @@ export class Editor {
 
         oCtx.stroke();
     }
+
+    static #filter(canvas: HTMLCanvasElement, filter: string) {
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+            return;
+        }
+
+        ctx.filter = filter;
+        ctx.drawImage(canvas, 0, 0);
+        ctx.filter = "none";
+    }
+
+    static invert(canvas: HTMLCanvasElement, fraction: number) {
+        this.#filter(canvas, `invert(${fraction})`);
+    }
+
+    static greyscale(canvas: HTMLCanvasElement, fraction: number) {
+        this.#filter(canvas, `grayscale(${fraction})`);
+    }
+
+    static blur(canvas: HTMLCanvasElement, radius: number) {
+        this.#filter(canvas, `blur(${radius}px)`);
+    }
 }

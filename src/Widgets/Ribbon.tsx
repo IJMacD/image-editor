@@ -60,15 +60,23 @@ export function Ribbon({ children, selectedTabID, onClickTab }: { children: Reac
 function getTabs (children: React.ReactNode) {
   const tabs: Record<string, { label: string, element: React.ReactNode}> = {};
 
-  React.Children.forEach(children, (child) => {
+  const visitChild = (child: React.ReactNode) => {
     if (typeof child === "object" && child) {
       const c = child as React.ReactElement;
       if (c.type === RibbonTab) {
         const { id, label } = c.props as RibbonTabProps;
         tabs[id] = { label, element: c};
       }
+      // forEach doesn't flatten `React.Fragment`.
+      // This is dodgy implementation specific behaviour:
+      else if (c.type === Symbol.for("react.fragment") as unknown) {
+        React.Children.forEach((c.props as any).children, visitChild);
+      }
     }
-  });
+  }
+
+  // forEach already flattens arrays.
+  React.Children.forEach(children, visitChild);
 
   return tabs;
 }

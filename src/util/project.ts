@@ -17,10 +17,12 @@ export function getNextLayerID(project: ImageProject) {
   return Math.max(...project.layers.map((l) => l.id), 0) + 1;
 }
 
-export function isBaseLayer(layer: Layer): layer is BaseLayer {
-  return "canvas" in layer;
+export function isBaseLayer(layer: Layer | undefined): layer is BaseLayer {
+    return typeof layer !== "undefined" && "canvas" in layer;
 }
 
-export function isCompositeLayer(layer: Layer): layer is CompositeLayer {
-  return "inputs" in layer;
+export function isCompositeLayer(
+    layer: Layer | undefined
+): layer is CompositeLayer {
+    return typeof layer !== "undefined" && "inputs" in layer;
 }

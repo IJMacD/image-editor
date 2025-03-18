@@ -106,6 +106,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
       <canvas
         ref={overlayCanvasRef}
         className="absolute inset-0"
+        style={{display: isMouseDown ? undefined : "none"}}
       />
     </div>
   );
