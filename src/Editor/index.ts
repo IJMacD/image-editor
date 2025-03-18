@@ -82,8 +82,23 @@ export class Editor {
         this.#overlayCanvas?.getContext("2d")?.clearRect(0, 0, width, height);
     }
 
+    #setFillAndStroke(ctx: CanvasRenderingContext2D) {
+        const { color, fillAlpha, strokeColor, strokeAlpha } =
+            this.#toolOptions;
+
+        ctx.fillStyle =
+            color +
+            Math.floor(fillAlpha * 255)
+                .toString(16)
+                .padStart(2, "0");
+        ctx.strokeStyle =
+            strokeColor +
+            Math.floor(strokeAlpha * 255)
+                .toString(16)
+                .padStart(2, "0");
+    }
+
     #pencil(ctx: CanvasRenderingContext2D, pos: Point) {
-        const toolStrokeColor = this.#toolOptions.strokeColor;
         const toolSize = this.#toolOptions.size;
         const { x: prevX, y: prevY } = this.#prevPoint;
 
@@ -91,15 +106,19 @@ export class Editor {
         ctx.moveTo(prevX, prevY);
         ctx.lineTo(pos.x, pos.y);
 
-        ctx.strokeStyle = toolStrokeColor;
+        this.#setFillAndStroke(ctx);
+
         ctx.lineWidth = toolSize;
         ctx.lineCap = "round";
         ctx.stroke();
     }
 
-    #shapes(ctx: CanvasRenderingContext2D, oCtx: CanvasRenderingContext2D, pos: Point, mouseEvent: MouseEvent) {
-        const toolFillColor = this.#toolOptions.color;
-        const toolStrokeColor = this.#toolOptions.strokeColor;
+    #shapes(
+        ctx: CanvasRenderingContext2D,
+        oCtx: CanvasRenderingContext2D,
+        pos: Point,
+        mouseEvent: MouseEvent
+    ) {
         const toolSize = this.#toolOptions.size;
 
         const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);
@@ -108,15 +127,10 @@ export class Editor {
         );
         const shape = this.#toolOptions.shape;
 
-        oCtx.clearRect(
-            0,
-            0,
-            oCtx.canvas.width,
-            oCtx.canvas.height
-        );
+        oCtx.clearRect(0, 0, oCtx.canvas.width, oCtx.canvas.height);
 
-        oCtx.fillStyle = toolFillColor;
-        oCtx.strokeStyle = toolStrokeColor;
+        this.#setFillAndStroke(oCtx);
+
         oCtx.lineWidth = toolSize;
 
         const { x, y } = pos;
@@ -131,7 +145,13 @@ export class Editor {
             if (mouseEvent.shiftKey) {
                 oCtx.arc(startX, startY, r, 0, Math.PI * 2);
             } else {
-                oCtx.arc((startX + x) / 2, (startY + y) / 2, r / 2, 0, Math.PI * 2);
+                oCtx.arc(
+                    (startX + x) / 2,
+                    (startY + y) / 2,
+                    r / 2,
+                    0,
+                    Math.PI * 2
+                );
             }
 
             if (isFill) oCtx.fill();
@@ -187,32 +207,27 @@ export class Editor {
         }
     }
 
-    #line(ctx: CanvasRenderingContext2D, oCtx: CanvasRenderingContext2D, pos: Point, mouseEvent: MouseEvent) {
-        const { color, strokeColor, size, lineCap } = this.#toolOptions;
+    #line(
+        ctx: CanvasRenderingContext2D,
+        oCtx: CanvasRenderingContext2D,
+        pos: Point,
+        mouseEvent: MouseEvent
+    ) {
+        const { size, lineCap } = this.#toolOptions;
 
         // const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);
         // const isStroke = ["stroke", "both"].includes(
         //     this.#toolOptions.fillStroke
         // );
 
-        oCtx.clearRect(
-            0,
-            0,
-            oCtx.canvas.width,
-            oCtx.canvas.height
-        );
+        oCtx.clearRect(0, 0, oCtx.canvas.width, oCtx.canvas.height);
 
-        oCtx.fillStyle = color;
-        oCtx.strokeStyle = strokeColor;
+        this.#setFillAndStroke(oCtx);
+
         oCtx.lineWidth = size;
         oCtx.lineCap = lineCap;
 
-        oCtx.clearRect(
-            0,
-            0,
-            oCtx.canvas.width,
-            oCtx.canvas.height
-        );
+        oCtx.clearRect(0, 0, oCtx.canvas.width, oCtx.canvas.height);
 
         oCtx.beginPath();
 
@@ -228,14 +243,13 @@ export class Editor {
             const dx = pos.x - prevX;
             const dy = pos.y - prevY;
             const theta = Math.atan2(dy, dx);
-            const twelthPi = Math.PI / 12;
-            const lockedTheta = Math.round(theta / twelthPi) * twelthPi;
+            const twelfthPi = Math.PI / 12;
+            const lockedTheta = Math.round(theta / twelfthPi) * twelfthPi;
             const r = Math.sqrt(dx * dx + dy * dy);
             const x = prevX + r * Math.cos(lockedTheta);
             const y = prevY + r * Math.sin(lockedTheta);
             oCtx.lineTo(x, y);
-        }
-        else {
+        } else {
             oCtx.lineTo(pos.x, pos.y);
         }
 

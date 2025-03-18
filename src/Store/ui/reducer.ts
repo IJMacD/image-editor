@@ -7,7 +7,9 @@ export const defaultUIState: UIState = {
     tool: "pencil",
     toolOptions: {
         color: "#000000",
+        fillAlpha: 1,
         strokeColor: "#FF0000",
+        strokeAlpha: 1,
         fillStroke: "fill",
         size: 1,
         shape: "circle",
@@ -23,12 +25,18 @@ export const defaultUIState: UIState = {
 
 export function uiReducer(state: UIState, action: Action): UIState {
     switch (action.type) {
-        case ActionTypes.SET_TOOL:
+        case ActionTypes.SET_TOOL: {
+            let fillStroke = state.toolOptions.fillStroke;
             return {
                 ...state,
                 tool: action.payload.tool,
+                toolOptions: {
+                    ...state.toolOptions,
+                    fillStroke: action.payload.tool === "line" && fillStroke === "fill" ? "both" : fillStroke,
+                },
                 ribbon: { ...state.ribbon, selectedTabID: action.payload.tool },
             };
+        }
         case ActionTypes.SET_TOOL_OPTIONS:
             return {
                 ...state,

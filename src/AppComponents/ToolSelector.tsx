@@ -7,10 +7,17 @@ export function ToolSelector () {
   const dispatch = useContext(DispatchContext);
 
   const tool = store.ui.tool;
+  const shape = store.ui.toolOptions.shape;
+
+  const shapeMap = {
+    "circle": "🔴",
+    "rectangle": "🟥",
+    "triangle": "🔺",
+  };
 
   const tools = {
     "pencil": "✏️",
-    "shapes": "🔴",
+    "shapes": shapeMap[shape],
     "line": "📈",
     "fill": <span className="block" style={{transform:"rotate(45deg)"}}>🪣</span>,
   }

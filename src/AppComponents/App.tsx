@@ -1,4 +1,4 @@
-import { useReducer } from 'react'
+import { useEffect, useReducer } from 'react'
 import './App.css'
 import { AppRibbon } from './AppRibbon'
 import { Panel } from '../Widgets/Panel'
@@ -8,9 +8,18 @@ import { LayersPanel } from './LayersPanel'
 import { CompositionTreePanel } from './CompositionTreePanel'
 import { ToolSelector } from './ToolSelector'
 import { useKeyboardShortcuts } from '../Hooks/useKeyboardShortcuts'
+import { UIState } from '../types'
+import { useSavedState } from '../Hooks/useSavedState'
+import { useThrottle } from '../Hooks/useThrottle'
 
 function App() {
-  const [store, dispatch] = useReducer(rootReducer, defaultAppState);
+  const [savedUIState, saveUIState] = useSavedState("image-editor.uiState", {} as Partial<UIState>);
+  const [store, dispatch] = useReducer(rootReducer, { ...defaultAppState, ui: { ...defaultAppState.ui, ...savedUIState }});
+
+  const dampedUIState = useThrottle(store.ui)
+  useEffect(() => {
+    saveUIState(dampedUIState);
+  }, [dampedUIState]);
 
   useKeyboardShortcuts(store, dispatch);
 

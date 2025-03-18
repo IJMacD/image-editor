@@ -35,7 +35,9 @@ export interface CompositeLayer {
 
 export interface ToolOptions {
     color: string;
+    fillAlpha: number;
     strokeColor: string;
+    strokeAlpha: number;
     fillStroke: "fill" | "stroke" | "both";
     size: number;
     shape: "circle" | "rectangle" | "triangle";

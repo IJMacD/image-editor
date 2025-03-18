@@ -6,7 +6,7 @@ import { StoreContext, DispatchContext } from "../../Store/context";
 import { newComposition, newDocument, newLayer } from "../../Store/project/actions";
 import { RibbonTab } from "../../Widgets/RibbonTab";
 import { selectProject } from "../../Store/project/selectors";
-import { setRibbonTab, setToolOptions, setToolSize, setToolStrokeColor } from "../../Store/ui/actions";
+import { setRibbonTab, setToolOptions, setToolSize } from "../../Store/ui/actions";
 import { getNextLayerID } from "../../util/project";
 import { ShapeTab } from "./ShapeTab";
 import { RibbonColorPicker } from "../../Widgets/RibbonColorPicker";
@@ -20,7 +20,10 @@ export function AppRibbon () {
 
   const project = selectProject(store);
 
+  const toolFillColor = store.ui.toolOptions.color;
+  const toolFillAlpha = store.ui.toolOptions.fillAlpha;
   const toolStrokeColor = store.ui.toolOptions.strokeColor;
+  const toolStrokeAlpha = store.ui.toolOptions.strokeAlpha;
   const toolLineCap = store.ui.toolOptions.lineCap;
 
   return (
@@ -43,7 +46,7 @@ export function AppRibbon () {
         <RibbonTab id="pencil" label="Pencil">
           <StrokeThickness />
           <RibbonDivider />
-          <RibbonColorPicker label="Pencil Colour" value={toolStrokeColor} onChange={(value) => dispatch(setToolStrokeColor(value))} alpha={1} />
+          <RibbonColorPicker label="Pencil Colour" value={toolStrokeColor} onChange={(strokeColor, strokeAlpha) => dispatch(setToolOptions({ strokeColor, strokeAlpha }))} alpha={toolStrokeAlpha} />
         </RibbonTab>
       }
       {store.ui.tool === "shapes" && <RibbonTab id="shapes" label="Shapes"><ShapeTab /></RibbonTab>}
@@ -60,6 +63,13 @@ export function AppRibbon () {
                 <option value="round">Round</option>
               </select>
             </label>
+        </RibbonTab>
+      }
+      {
+        store.ui.tool === "fill" &&
+        <RibbonTab id="fill" label="Fill">
+          <RibbonColorPicker label="Fill Colour" value={toolFillColor} onChange={(color, fillAlpha) => dispatch(setToolOptions({ color, fillAlpha }))} alpha={toolFillAlpha} />
+          <RibbonDivider />
         </RibbonTab>
       }
     </Ribbon>

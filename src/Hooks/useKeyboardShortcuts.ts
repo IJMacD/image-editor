@@ -18,17 +18,24 @@ export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<A
 
     useEffect(() => {
       const cb = (e: KeyboardEvent) => {
+        if (
+            e.target instanceof HTMLInputElement ||
+            e.target instanceof HTMLSelectElement
+        ) {
+            return;
+        }
+
         if (e.ctrlKey || e.metaKey) {
-          switch (e.key) {
-            case "l":
-              if (store.project) {
-                const nextID = getNextLayerID(store.project);
-                dispatch(newLayer(nextID));
-              }
-              e.preventDefault();
-                  return;
-          }
-          return;
+            switch (e.key) {
+                case "l":
+                if (store.project) {
+                    const nextID = getNextLayerID(store.project);
+                    dispatch(newLayer(nextID));
+                }
+                e.preventDefault();
+                return;
+            }
+            return;
         }
 
         switch (e.key) {
