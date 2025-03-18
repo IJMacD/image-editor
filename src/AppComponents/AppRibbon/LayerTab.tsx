@@ -1,13 +1,14 @@
 import { useContext } from "react";
-import { StoreContext } from "../../Store/context";
+import { DispatchContext, StoreContext } from "../../Store/context";
 import { RibbonDivider } from "../../Widgets/RibbonDivider";
 import { RibbonButton } from "../../Widgets/RibbonButton";
 import { selectActiveLayer } from "../../Store/selectors";
 import { isBaseLayer } from "../../util/project";
-import { Editor } from "../../Editor";
+import { applyLayerFilter } from "../../Store/project/actions";
 
 export function LayerTab () {
     const store = useContext(StoreContext);
+    const dispatch = useContext(DispatchContext);
 
     const layer = selectActiveLayer(store);
 
@@ -18,13 +19,13 @@ export function LayerTab () {
 
         switch(action) {
             case "invert":
-                Editor.invert(layer.canvas, 1);
+                dispatch(applyLayerFilter(store.ui.layers.activeLayerID, "invert", 1));
                 break;
             case "greyscale":
-                Editor.greyscale(layer.canvas, 1);
+                dispatch(applyLayerFilter(store.ui.layers.activeLayerID, "greyscale", 1));
                 break;
             case "blur":
-                Editor.blur(layer.canvas, 4);
+                dispatch(applyLayerFilter(store.ui.layers.activeLayerID, "blur", 4));
                 break;
         }
     }

@@ -1,5 +1,10 @@
+import { Editor } from "../../Editor";
 import { BaseLayer, ImageProject } from "../../types";
-import { getNextLayerID, isCompositeLayer } from "../../util/project";
+import {
+    getNextLayerID,
+    isBaseLayer,
+    isCompositeLayer,
+} from "../../util/project";
 import { Action } from "../actions";
 import { ActionTypes } from "./actions";
 
@@ -9,179 +14,226 @@ const width = 512;
 const height = 512;
 
 export const defaultProjectState: ImageProject = {
-  layers: [
-    {
-      id: 0,
-      name: "Image",
-      width,
-      height,
-      inputs: [
+    layers: [
         {
-          id: 1,
-          x: 0,
-          y: 0,
-          enabled: true,
-          operation: "source-over" as GlobalCompositeOperation,
-          parameters: {},
+            id: 0,
+            name: "Image",
+            width,
+            height,
+            inputs: [
+                {
+                    id: 1,
+                    x: 0,
+                    y: 0,
+                    enabled: true,
+                    operation: "source-over" as GlobalCompositeOperation,
+                    parameters: {},
+                },
+            ],
         },
-      ],
-    },
-    {
-      id: 1,
-      name: "Layer 1",
-      width,
-      height,
-      canvas: null,
-    },
-  ],
-  compositions: [0],
-  width,
-  height,
+        {
+            id: 1,
+            name: "Layer 1",
+            width,
+            height,
+            canvas: null,
+        },
+    ],
+    compositions: [0],
+    width,
+    height,
 };
 
 export function projectReducer(
-  state: ProjectState,
-  action: Action
+    state: ProjectState,
+    action: Action
 ): ProjectState {
-  switch (action.type) {
-    case ActionTypes.NEW_DOCUMENT:
-      if (!state) {
-        return defaultProjectState;
-      }
-      break;
-    case ActionTypes.NEW_LAYER:
-      if (state) {
-        const { width, height } = state;
+    switch (action.type) {
+        case ActionTypes.NEW_DOCUMENT:
+            if (!state) {
+                return defaultProjectState;
+            }
+            break;
+        case ActionTypes.NEW_LAYER:
+            if (state) {
+                const { width, height } = state;
 
-        const { id } = action.payload;
+                const { id } = action.payload;
 
-        const newLayer: BaseLayer = {
-          name: `Layer ${id}`,
-          width,
-          height,
-          canvas: null,
-          ...action.payload,
-        };
+                const newLayer: BaseLayer = {
+                    name: `Layer ${id}`,
+                    width,
+                    height,
+                    canvas: null,
+                    ...action.payload,
+                };
 
-        const firstComposition = state.layers.find(
-          (l) => l.id === state.compositions[0]
-        );
+                const firstComposition = state.layers.find(
+                    (l) => l.id === state.compositions[0]
+                );
 
-        return {
-          ...state,
-          layers: [
-            ...state.layers.map((l) =>
-              l === firstComposition && "inputs" in l
-                ? {
-                    ...l,
-                    inputs: [
-                      ...l.inputs,
-                      {
-                        id,
-                        x: 0,
-                        y: 0,
-                        enabled: true,
-                        operation: "source-over" as GlobalCompositeOperation,
-                        parameters: {},
-                      },
+                return {
+                    ...state,
+                    layers: [
+                        ...state.layers.map((l) =>
+                            l === firstComposition && "inputs" in l
+                                ? {
+                                      ...l,
+                                      inputs: [
+                                          ...l.inputs,
+                                          {
+                                              id,
+                                              x: 0,
+                                              y: 0,
+                                              enabled: true,
+                                              operation:
+                                                  "source-over" as GlobalCompositeOperation,
+                                              parameters: {},
+                                          },
+                                      ],
+                                  }
+                                : l
+                        ),
+                        {
+                            ...newLayer,
+                            canvas: null,
+                        },
                     ],
-                  }
-                : l
-            ),
-            {
-              ...newLayer,
-              canvas: null,
-            },
-          ],
-        };
-      }
-      break;
-    case ActionTypes.NEW_COMPOSITION:
-      if (state) {
-        const id = getNextLayerID(state);
-        const { width, height } = state;
-        return (
-          state && {
-            ...state,
-            layers: [
-              ...state.layers,
-              { id, name: `Output ${id}`, width, height, inputs: [] },
-            ],
-            compositions: [...state.compositions, id],
-          }
-        );
-      }
-      break;
+                };
+            }
+            break;
+        case ActionTypes.NEW_COMPOSITION:
+            if (state) {
+                const id = getNextLayerID(state);
+                const { width, height } = state;
+                return (
+                    state && {
+                        ...state,
+                        layers: [
+                            ...state.layers,
+                            {
+                                id,
+                                name: `Output ${id}`,
+                                width,
+                                height,
+                                inputs: [],
+                            },
+                        ],
+                        compositions: [...state.compositions, id],
+                    }
+                );
+            }
+            break;
 
-    case ActionTypes.EDIT_LAYER:
-      return (
-        state && {
-          ...state,
-          layers: state.layers.map((l) =>
-            l.id === action.payload.id
-              ? {
-                  ...l,
-                  ...action.payload.properties,
-                }
-              : l
-          ),
-        }
-      );
-    case ActionTypes.EDIT_COMPOSITE_LAYER:
-      return (
-        state && {
-          ...state,
-          layers: state.layers.map((l) =>
-            l.id === action.payload.id
-              ? {
-                  ...l,
-                  ...action.payload.properties,
-                }
-              : l
-          ),
-        }
-      );
-    case ActionTypes.EDIT_COMPOSITE_LAYER_INPUT:
-      return (
-        state && {
-          ...state,
-          layers: state.layers.map((l) =>
-            l.id === action.payload.id && isCompositeLayer(l)
-              ? {
-                  ...l,
-                  inputs: l.inputs.map((input, i) =>
-                    i === action.payload.index
-                      ? { ...input, ...action.payload.properties }
-                      : input
-                  ),
-                }
-              : l
-          ),
-        }
-      );
-
-    case ActionTypes.DELETE_LAYER:
-      return (
-        state && {
-          ...state,
-          layers: state.layers
-            .filter((l) => l.id !== action.payload.id)
-            .map((l) =>
-              "inputs" in l &&
-              l.inputs.some((input) => input.id === action.payload.id)
-                ? {
-                    ...l,
-                    inputs: l.inputs.filter(
-                      (input) => input.id !== action.payload.id
+        case ActionTypes.EDIT_LAYER:
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map((l) =>
+                        l.id === action.payload.id
+                            ? {
+                                  ...l,
+                                  ...action.payload.properties,
+                              }
+                            : l
                     ),
-                  }
-                : l
-            ),
-          compositions: state.compositions.filter(
-            (id) => id !== action.payload.id
-          ),
+                }
+            );
+        case ActionTypes.EDIT_COMPOSITE_LAYER:
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map((l) =>
+                        l.id === action.payload.id
+                            ? {
+                                  ...l,
+                                  ...action.payload.properties,
+                              }
+                            : l
+                    ),
+                }
+            );
+        case ActionTypes.EDIT_COMPOSITE_LAYER_INPUT:
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map((l) =>
+                        l.id === action.payload.id && isCompositeLayer(l)
+                            ? {
+                                  ...l,
+                                  inputs: l.inputs.map((input, i) =>
+                                      i === action.payload.index
+                                          ? {
+                                                ...input,
+                                                ...action.payload.properties,
+                                            }
+                                          : input
+                                  ),
+                              }
+                            : l
+                    ),
+                }
+            );
+
+        case ActionTypes.DELETE_LAYER:
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers
+                        .filter((l) => l.id !== action.payload.id)
+                        .map((l) =>
+                            "inputs" in l &&
+                            l.inputs.some(
+                                (input) => input.id === action.payload.id
+                            )
+                                ? {
+                                      ...l,
+                                      inputs: l.inputs.filter(
+                                          (input) =>
+                                              input.id !== action.payload.id
+                                      ),
+                                  }
+                                : l
+                        ),
+                    compositions: state.compositions.filter(
+                        (id) => id !== action.payload.id
+                    ),
+                }
+            );
+
+        case ActionTypes.APPLY_LAYER_FILTER: {
+            if (!state) {
+                return state;
+            }
+
+            return {
+                ...state,
+                layers: state.layers.map((l) => {
+                    if (
+                        l.id === action.payload.id &&
+                        isBaseLayer(l) &&
+                        l.canvas
+                    ) {
+                        switch (action.payload.filter) {
+                            case "invert":
+                                Editor.invert(l.canvas, action.payload.value);
+                                break;
+                            case "greyscale":
+                                Editor.greyscale(
+                                    l.canvas,
+                                    action.payload.value
+                                );
+                                break;
+                            case "blur":
+                                Editor.blur(l.canvas, action.payload.value);
+                                break;
+                        }
+                    }
+
+                    return l;
+                }),
+            };
         }
-      );
-  }
-  return state;
+    }
+    return state;
 }
