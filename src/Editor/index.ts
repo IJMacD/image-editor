@@ -256,27 +256,33 @@ export class Editor {
         oCtx.stroke();
     }
 
-    static #filter(canvas: HTMLCanvasElement, filter: string) {
+    static #filter(sourceCanvas: HTMLCanvasElement, filter: string) {
+        const canvas = document.createElement("canvas");
+        canvas.width = sourceCanvas.width;
+        canvas.height = sourceCanvas.height;
+
         const ctx = canvas.getContext("2d");
 
         if (!ctx) {
-            return;
+            return sourceCanvas;
         }
 
         ctx.filter = filter;
-        ctx.drawImage(canvas, 0, 0);
+        ctx.drawImage(sourceCanvas, 0, 0);
         ctx.filter = "none";
+
+        return canvas;
     }
 
     static invert(canvas: HTMLCanvasElement, fraction: number) {
-        this.#filter(canvas, `invert(${fraction})`);
+        return this.#filter(canvas, `invert(${fraction})`);
     }
 
     static greyscale(canvas: HTMLCanvasElement, fraction: number) {
-        this.#filter(canvas, `grayscale(${fraction})`);
+        return this.#filter(canvas, `grayscale(${fraction})`);
     }
 
     static blur(canvas: HTMLCanvasElement, radius: number) {
-        this.#filter(canvas, `blur(${radius}px)`);
+        return this.#filter(canvas, `blur(${radius}px)`);
     }
 }

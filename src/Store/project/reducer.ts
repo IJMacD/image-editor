@@ -214,20 +214,28 @@ export function projectReducer(
                         isBaseLayer(l) &&
                         l.canvas
                     ) {
+                        let canvas = l.canvas;
                         switch (action.payload.filter) {
                             case "invert":
-                                Editor.invert(l.canvas, action.payload.value);
+                                canvas = Editor.invert(
+                                    l.canvas,
+                                    action.payload.value
+                                );
                                 break;
                             case "greyscale":
-                                Editor.greyscale(
+                                canvas = Editor.greyscale(
                                     l.canvas,
                                     action.payload.value
                                 );
                                 break;
                             case "blur":
-                                Editor.blur(l.canvas, action.payload.value);
+                                canvas = Editor.blur(
+                                    l.canvas,
+                                    action.payload.value
+                                );
                                 break;
                         }
+                        return { ...l, canvas };
                     }
 
                     return l;
