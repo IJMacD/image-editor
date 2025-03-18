@@ -48,6 +48,7 @@ type EditCompositeLayerInputAction = {
       id: number;
       x: number;
       y: number;
+      enabled: boolean;
       operation: GlobalCompositeOperation;
       parameters: object;
     }>;

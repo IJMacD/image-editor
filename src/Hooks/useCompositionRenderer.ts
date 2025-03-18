@@ -34,7 +34,7 @@ function renderToCanvas(
     const layer = getLayerByID(project.layers, c.id);
     ctx.globalCompositeOperation = c.operation;
 
-    if (layer) {
+    if (c.enabled && layer) {
       if (isCompositeLayer(layer)) {
         renderToCanvas(canvas, layer, project);
       } else if (layer.canvas) {
