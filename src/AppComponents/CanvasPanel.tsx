@@ -55,7 +55,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
       const x = e.pageX - elementOffset.x;
       const y = e.pageY - elementOffset.y;
 
-      editorRef.current.mouseDown({ x, y }, e.nativeEvent);
+      editorRef.current.mouseDown({ x, y });
 
       setIsMouseDown(true);
     }

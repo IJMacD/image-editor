@@ -11,6 +11,7 @@ export function ToolSelector () {
   const tools = {
     "pencil": "✏️",
     "shapes": "🔴",
+    "line": "📈",
     "fill": <span className="block" style={{transform:"rotate(45deg)"}}>🪣</span>,
   }
 

@@ -1,11 +1,12 @@
 
 import {
-  decreaseToolSize,
-  increaseToolSize,
-  setShape,
-  setTool,
-  setToolColor,
-  setToolStrokeColor,
+    decreaseToolSize,
+    increaseToolSize,
+    setActiveLayer,
+    setShape,
+    setTool,
+    setToolColor,
+    setToolStrokeColor,
 } from "../Store/ui/actions";
 import { Action } from "../Store/actions";
 import { useEffect } from "react";
@@ -25,9 +26,7 @@ export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<A
                 dispatch(newLayer(nextID));
               }
               e.preventDefault();
-              return;
-            default:
-              console.log(e.key);
+                  return;
           }
           return;
         }
@@ -47,6 +46,9 @@ export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<A
                 }
                 break;
             }
+            case "l":
+                dispatch(setTool("line"))
+                break;
             case "f":
                 dispatch(setTool("fill"))
                 break;
@@ -65,9 +67,25 @@ export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<A
             case "]":
                 dispatch(increaseToolSize());
                 return;
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "6":
+            case "7":
+            case "8":
+            case "9":
+            case "0":
+                {
+                    const index = ((e.key.codePointAt(0) || 0) - ("0".codePointAt(0) || 0) + 9) % 10;
+                    const id = store.project?.layers[index]?.id;
+                    if (typeof id == "number") {
+                        dispatch(setActiveLayer(id))
+                    }
+                }
+                break;
         }
-
-        console.log(e.key);
       };
 
       document.addEventListener("keydown", cb);

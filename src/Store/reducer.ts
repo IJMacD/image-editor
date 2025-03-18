@@ -1,8 +1,8 @@
 import type { Reducer } from "react";
 import type { Action } from "./actions";
 import { defaultProjectState, projectReducer } from "./project/reducer";
-import type { ImageProject } from "../types";
-import { defaultUIState, uiReducer, UIState } from "./ui/reducer";
+import type { ImageProject, UIState } from "../types";
+import { defaultUIState, uiReducer } from "./ui/reducer";
 
 export type AppState = {
   project: ImageProject | null;
@@ -19,7 +19,7 @@ export const defaultAppState = {
 function combineReducers<S, A>(slices: {
   [prop: string]: Reducer<any, A>;
 }): Reducer<S, A> {
-  return (state: any, action: A) =>
+  return (state: S, action: A) =>
     Object.keys(slices).reduce(
       // use for..in loop, if you prefer it
       (acc, prop) => ({

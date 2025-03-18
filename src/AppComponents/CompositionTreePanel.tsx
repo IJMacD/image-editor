@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { CompositeLayer, ImageProject } from "../types";
+import { CompositeLayer, ImageProject, InputProperties } from "../types";
 import { getLayerByID, isCompositeLayer } from "../util/project";
 import { DispatchContext } from "../Store/context";
 import { deleteLayer, editBaseLayer, editCompositeLayerInput } from "../Store/project/actions";
@@ -38,7 +38,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
 function CompositionTree ({ compositeLayer, project }: { compositeLayer: CompositeLayer, project: ImageProject }) {
     const dispatch = useContext(DispatchContext);
 
-    function handleEditInput (index: number, properties: any) {
+    function handleEditInput(index: number, properties: Partial<InputProperties>) {
         dispatch(editCompositeLayerInput(compositeLayer.id, index, { ...properties }));
     }
 

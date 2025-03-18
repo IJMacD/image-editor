@@ -1,13 +1,11 @@
+import { ToolOptions } from "../../types";
+
 export enum ActionTypes {
   SET_TOOL = "ui/setTool",
-  SET_TOOL_COLOR = "ui/setToolColor",
-  SET_TOOL_STROKE_COLOR = "ui/setToolStrokeColor",
-  SET_TOOL_SIZE = "ui/setToolSize",
+  SET_TOOL_OPTIONS = "ui/setToolOptions",
   ADJUST_TOOL_SIZE = "ui/adjustToolSize",
-  SET_SHAPE = "ui/setShape",
   RIBBON_SET_TAB = "ui/ribbonSetTab",
   SET_ACTIVE_LAYER = "ui/setActiveLayer",
-  SET_FILL_STROKE = "ui/setFillStroke",
 }
 
 type SetToolAction = {
@@ -15,24 +13,14 @@ type SetToolAction = {
   payload: { tool: string };
 };
 
-type SetToolColorAction = {
-  type: ActionTypes.SET_TOOL_COLOR | ActionTypes.SET_TOOL_STROKE_COLOR;
-  payload: { color: string };
-};
-
-type SetToolSizeAction = {
-  type: ActionTypes.SET_TOOL_SIZE;
-  payload: { size: number };
+type SetToolOptionsAction = {
+  type: ActionTypes.SET_TOOL_OPTIONS;
+  payload: Partial<ToolOptions>;
 };
 
 type AdjustToolSizeAction = {
   type: ActionTypes.ADJUST_TOOL_SIZE;
   payload: { change: number };
-};
-
-type SetShapeAction = {
-  type: ActionTypes.SET_SHAPE;
-  payload: { shape: "circle" | "rectangle" | "triangle" };
 };
 
 type RibbonSetTabAction = {
@@ -45,20 +33,12 @@ type SetActiveLayerAction = {
   payload: { id: number };
 };
 
-type SetFillStrokeAction = {
-  type: ActionTypes.SET_FILL_STROKE;
-  payload: { fillStroke: "fill" | "stroke" | "both" };
-};
-
 export type Action =
   | SetToolAction
-  | SetToolColorAction
-  | SetToolSizeAction
+  | SetToolOptionsAction
   | AdjustToolSizeAction
-  | SetShapeAction
   | RibbonSetTabAction
-  | SetActiveLayerAction
-  | SetFillStrokeAction;
+  | SetActiveLayerAction;
 
 export function setTool(tool: string): SetToolAction {
   return {
@@ -67,23 +47,30 @@ export function setTool(tool: string): SetToolAction {
   };
 }
 
-export function setToolColor(color: string): SetToolColorAction {
+export function setToolOptions(options: Partial<ToolOptions>): SetToolOptionsAction {
   return {
-    type: ActionTypes.SET_TOOL_COLOR,
+    type: ActionTypes.SET_TOOL_OPTIONS,
+    payload: options,
+  };
+}
+
+export function setToolColor(color: string): SetToolOptionsAction {
+  return {
+    type: ActionTypes.SET_TOOL_OPTIONS,
     payload: { color },
   };
 }
 
-export function setToolStrokeColor(color: string): SetToolColorAction {
+export function setToolStrokeColor(color: string): SetToolOptionsAction {
   return {
-    type: ActionTypes.SET_TOOL_STROKE_COLOR,
-    payload: { color },
+    type: ActionTypes.SET_TOOL_OPTIONS,
+    payload: { strokeColor: color },
   };
 }
 
-export function setToolSize(size: number): SetToolSizeAction {
+export function setToolSize(size: number): SetToolOptionsAction {
   return {
-    type: ActionTypes.SET_TOOL_SIZE,
+    type: ActionTypes.SET_TOOL_OPTIONS,
     payload: { size },
   };
 }
@@ -104,9 +91,9 @@ export function decreaseToolSize(change: number = 1): AdjustToolSizeAction {
 
 export function setShape(
   shape: "circle" | "rectangle" | "triangle"
-): SetShapeAction {
+): SetToolOptionsAction {
   return {
-    type: ActionTypes.SET_SHAPE,
+    type: ActionTypes.SET_TOOL_OPTIONS,
     payload: { shape },
   };
 }
@@ -127,9 +114,9 @@ export function setActiveLayer(id: number): SetActiveLayerAction {
 
 export function setFillStroke(
   fillStroke: "fill" | "stroke" | "both"
-): SetFillStrokeAction {
+): SetToolOptionsAction {
   return {
-    type: ActionTypes.SET_FILL_STROKE,
+    type: ActionTypes.SET_TOOL_OPTIONS,
     payload: { fillStroke },
   };
 }

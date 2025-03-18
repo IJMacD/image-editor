@@ -12,7 +12,7 @@ export const defaultProjectState: ImageProject = {
   layers: [
     {
       id: 0,
-      name: "Output 0",
+      name: "Image",
       width,
       height,
       inputs: [

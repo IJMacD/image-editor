@@ -7,10 +7,12 @@ export class Editor {
     #overlayCanvas: HTMLCanvasElement | null = null;
 
     #tool = "";
-    #toolOptions: typeof defaultUIState.toolOptions | null = null;
+    #toolOptions = defaultUIState.toolOptions;
 
     #firstPoint: Point = { x: 0, y: 0 };
     #prevPoint: Point = { x: 0, y: 0 };
+
+    #currentPath: Point[] = [];
 
     setCanvases(
         canvas: HTMLCanvasElement | null,
@@ -25,9 +27,13 @@ export class Editor {
         this.#toolOptions = toolOptions;
     }
 
-    mouseDown(mousePos: Point, _mouseEvent: MouseEvent) {
+    mouseDown(mousePos: Point) {
         this.#firstPoint = mousePos;
         this.#prevPoint = mousePos;
+
+        if (this.#tool === "line") {
+            this.#currentPath = [mousePos];
+        }
     }
 
     mouseMove(mousePos: Point, mouseEvent: MouseEvent) {
@@ -42,117 +48,16 @@ export class Editor {
             return;
         }
 
-        if (!this.#toolOptions) {
-            return;
-        }
-
-        const { x: prevX, y: prevY } = this.#prevPoint;
-
         switch (this.#tool) {
             case "pencil":
-                {
-                    const toolStrokeColor = this.#toolOptions.strokeColor;
-                    const toolSize = this.#toolOptions.size;
-
-                    ctx.beginPath();
-                    ctx.moveTo(prevX, prevY);
-                    ctx.lineTo(mousePos.x, mousePos.y);
-
-                    ctx.strokeStyle = toolStrokeColor;
-                    ctx.lineWidth = toolSize;
-                    ctx.lineCap = "round";
-                    ctx.stroke();
-                }
+                this.#pencil(ctx, mousePos);
                 break;
-            case "shapes": {
-                const toolFillColor = this.#toolOptions.color;
-                const toolStrokeColor = this.#toolOptions.strokeColor;
-                const toolSize = this.#toolOptions.size;
-
-                const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);
-                const isStroke = ["stroke", "both"].includes(
-                    this.#toolOptions.fillStroke
-                );
-                const shape = this.#toolOptions.shape;
-
-                oCtx.clearRect(
-                    0,
-                    0,
-                    this.#overlayCanvas.width,
-                    this.#overlayCanvas.height
-                );
-
-                oCtx.fillStyle = toolFillColor;
-                oCtx.strokeStyle = toolStrokeColor;
-                oCtx.lineWidth = toolSize;
-
-                const { x, y } = mousePos;
-                const { x: startX, y: startY } = this.#firstPoint;
-                const dx = x - startX;
-                const dy = y - startY;
-
-                if (shape === "circle") {
-                    const r = Math.sqrt(dx * dx + dy * dy);
-                    oCtx.beginPath();
-
-                    if (mouseEvent.shiftKey) {
-                        oCtx.arc(startX, startY, r, 0, Math.PI * 2);
-                    } else {
-                        oCtx.arc((startX + x) / 2, (startY + y) / 2, r / 2, 0, Math.PI * 2);
-                    }
-
-                    isFill && oCtx.fill();
-                    isStroke && oCtx.stroke();
-                } else if (shape === "rectangle") {
-                    oCtx.beginPath();
-                    if (mouseEvent.shiftKey) {
-                        if (mouseEvent.ctrlKey) {
-                            const d = (dx + dy) / 2;
-                            oCtx.rect(startX - d, startY - d, d * 2, d * 2);
-                        } else {
-                            oCtx.rect(startX - dx, startY - dy, dx * 2, dy * 2);
-                        }
-                    } else {
-                        if (mouseEvent.ctrlKey) {
-                            const d = (dx + dy) / 2;
-                            oCtx.rect(startX, startY, d, d);
-                        } else {
-                            oCtx.rect(startX, startY, dx, dy);
-                        }
-                    }
-
-                    isFill && oCtx.fill();
-                    isStroke && oCtx.stroke();
-                } else if (shape === "triangle") {
-                    const r = Math.sqrt(dx * dx + dy * dy);
-                    const theta = Math.atan2(dy, dx);
-
-                    oCtx.beginPath();
-
-                    if (mouseEvent.shiftKey) {
-                        oCtx.moveTo(x, y);
-
-                        const x1 = startX + r * Math.cos(theta + (Math.PI * 2) / 3);
-                        const y1 = startY + r * Math.sin(theta + (Math.PI * 2) / 3);
-                        oCtx.lineTo(x1, y1);
-
-                        const x2 = startX + r * Math.cos(theta + (Math.PI * 4) / 3);
-                        const y2 = startY + r * Math.sin(theta + (Math.PI * 4) / 3);
-                        oCtx.lineTo(x2, y2);
-                        oCtx.closePath();
-                    } else {
-                        const x3 = x + r * Math.cos(theta + (Math.PI * 2) / 3);
-                        const y3 = y + r * Math.sin(theta + (Math.PI * 2) / 3);
-                        oCtx.moveTo(startX, startY);
-                        oCtx.lineTo(x, y);
-                        oCtx.lineTo(x3, y3);
-                        oCtx.closePath();
-                    }
-
-                    isFill && oCtx.fill();
-                    isStroke && oCtx.stroke();
-                }
-            }
+            case "shapes":
+                this.#shapes(ctx, oCtx, mousePos, mouseEvent);
+                break;
+            case "line":
+                this.#line(ctx, oCtx, mousePos, mouseEvent);
+                break;
         }
 
         this.#prevPoint = mousePos;
@@ -163,7 +68,7 @@ export class Editor {
             return;
         }
 
-        if (this.#tool === "shapes") {
+        if (this.#tool === "shapes" || this.#tool === "line") {
             const ctx = this.#canvas.getContext("2d");
 
             if (!ctx) {
@@ -175,5 +80,165 @@ export class Editor {
 
         const { width, height } = this.#overlayCanvas;
         this.#overlayCanvas?.getContext("2d")?.clearRect(0, 0, width, height);
+    }
+
+    #pencil(ctx: CanvasRenderingContext2D, pos: Point) {
+        const toolStrokeColor = this.#toolOptions.strokeColor;
+        const toolSize = this.#toolOptions.size;
+        const { x: prevX, y: prevY } = this.#prevPoint;
+
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(pos.x, pos.y);
+
+        ctx.strokeStyle = toolStrokeColor;
+        ctx.lineWidth = toolSize;
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
+
+    #shapes(ctx: CanvasRenderingContext2D, oCtx: CanvasRenderingContext2D, pos: Point, mouseEvent: MouseEvent) {
+        const toolFillColor = this.#toolOptions.color;
+        const toolStrokeColor = this.#toolOptions.strokeColor;
+        const toolSize = this.#toolOptions.size;
+
+        const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);
+        const isStroke = ["stroke", "both"].includes(
+            this.#toolOptions.fillStroke
+        );
+        const shape = this.#toolOptions.shape;
+
+        oCtx.clearRect(
+            0,
+            0,
+            oCtx.canvas.width,
+            oCtx.canvas.height
+        );
+
+        oCtx.fillStyle = toolFillColor;
+        oCtx.strokeStyle = toolStrokeColor;
+        oCtx.lineWidth = toolSize;
+
+        const { x, y } = pos;
+        const { x: startX, y: startY } = this.#firstPoint;
+        const dx = x - startX;
+        const dy = y - startY;
+
+        if (shape === "circle") {
+            const r = Math.sqrt(dx * dx + dy * dy);
+            oCtx.beginPath();
+
+            if (mouseEvent.shiftKey) {
+                oCtx.arc(startX, startY, r, 0, Math.PI * 2);
+            } else {
+                oCtx.arc((startX + x) / 2, (startY + y) / 2, r / 2, 0, Math.PI * 2);
+            }
+
+            if (isFill) oCtx.fill();
+            if (isStroke) oCtx.stroke();
+        } else if (shape === "rectangle") {
+            oCtx.beginPath();
+            if (mouseEvent.shiftKey) {
+                if (mouseEvent.ctrlKey) {
+                    const d = (dx + dy) / 2;
+                    oCtx.rect(startX - d, startY - d, d * 2, d * 2);
+                } else {
+                    oCtx.rect(startX - dx, startY - dy, dx * 2, dy * 2);
+                }
+            } else {
+                if (mouseEvent.ctrlKey) {
+                    const d = (dx + dy) / 2;
+                    oCtx.rect(startX, startY, d, d);
+                } else {
+                    oCtx.rect(startX, startY, dx, dy);
+                }
+            }
+
+            if (isFill) oCtx.fill();
+            if (isStroke) oCtx.stroke();
+        } else if (shape === "triangle") {
+            const r = Math.sqrt(dx * dx + dy * dy);
+            const theta = Math.atan2(dy, dx);
+
+            oCtx.beginPath();
+
+            if (mouseEvent.shiftKey) {
+                oCtx.moveTo(x, y);
+
+                const x1 = startX + r * Math.cos(theta + (Math.PI * 2) / 3);
+                const y1 = startY + r * Math.sin(theta + (Math.PI * 2) / 3);
+                oCtx.lineTo(x1, y1);
+
+                const x2 = startX + r * Math.cos(theta + (Math.PI * 4) / 3);
+                const y2 = startY + r * Math.sin(theta + (Math.PI * 4) / 3);
+                oCtx.lineTo(x2, y2);
+                oCtx.closePath();
+            } else {
+                const x3 = x + r * Math.cos(theta + (Math.PI * 2) / 3);
+                const y3 = y + r * Math.sin(theta + (Math.PI * 2) / 3);
+                oCtx.moveTo(startX, startY);
+                oCtx.lineTo(x, y);
+                oCtx.lineTo(x3, y3);
+                oCtx.closePath();
+            }
+
+            if (isFill) oCtx.fill();
+            if (isStroke) oCtx.stroke();
+        }
+    }
+
+    #line(ctx: CanvasRenderingContext2D, oCtx: CanvasRenderingContext2D, pos: Point, mouseEvent: MouseEvent) {
+        const { color, strokeColor, size, lineCap } = this.#toolOptions;
+
+        // const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);
+        // const isStroke = ["stroke", "both"].includes(
+        //     this.#toolOptions.fillStroke
+        // );
+
+        oCtx.clearRect(
+            0,
+            0,
+            oCtx.canvas.width,
+            oCtx.canvas.height
+        );
+
+        oCtx.fillStyle = color;
+        oCtx.strokeStyle = strokeColor;
+        oCtx.lineWidth = size;
+        oCtx.lineCap = lineCap;
+
+        oCtx.clearRect(
+            0,
+            0,
+            oCtx.canvas.width,
+            oCtx.canvas.height
+        );
+
+        oCtx.beginPath();
+
+        const { x, y } = this.#firstPoint;
+        oCtx.moveTo(x, y);
+
+        // for (const { x, y } of this.#currentPath) {
+        //     oCtx.lineTo(x, y);
+        // }
+
+        if (mouseEvent.shiftKey) {
+            const { x: prevX, y: prevY } = this.#currentPath.slice(-1)[0];
+            const dx = pos.x - prevX;
+            const dy = pos.y - prevY;
+            const theta = Math.atan2(dy, dx);
+            const twelthPi = Math.PI / 12;
+            const lockedTheta = Math.round(theta / twelthPi) * twelthPi;
+            const r = Math.sqrt(dx * dx + dy * dy);
+            const x = prevX + r * Math.cos(lockedTheta);
+            const y = prevY + r * Math.sin(lockedTheta);
+            oCtx.lineTo(x, y);
+        }
+        else {
+            oCtx.lineTo(pos.x, pos.y);
+        }
+
+        oCtx.stroke();
     }
 }

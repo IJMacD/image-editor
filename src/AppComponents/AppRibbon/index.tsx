@@ -6,9 +6,11 @@ import { StoreContext, DispatchContext } from "../../Store/context";
 import { newComposition, newDocument, newLayer } from "../../Store/project/actions";
 import { RibbonTab } from "../../Widgets/RibbonTab";
 import { selectProject } from "../../Store/project/selectors";
-import { setRibbonTab, setToolSize, setToolStrokeColor } from "../../Store/ui/actions";
+import { setRibbonTab, setToolOptions, setToolSize, setToolStrokeColor } from "../../Store/ui/actions";
 import { getNextLayerID } from "../../util/project";
 import { ShapeTab } from "./ShapeTab";
+import { RibbonColorPicker } from "../../Widgets/RibbonColorPicker";
+import { FillStrokeControls } from "./common";
 
 export function AppRibbon () {
   const store = useContext(StoreContext);
@@ -19,7 +21,7 @@ export function AppRibbon () {
   const project = selectProject(store);
 
   const toolStrokeColor = store.ui.toolOptions.strokeColor;
-  const toolSize = store.ui.toolOptions.size;
+  const toolLineCap = store.ui.toolOptions.lineCap;
 
   return (
     <Ribbon selectedTabID={ribbonTab} onClickTab={(id) => dispatch(setRibbonTab(id))}>
@@ -39,18 +41,41 @@ export function AppRibbon () {
       {
         store.ui.tool === "pencil" &&
         <RibbonTab id="pencil" label="Pencil">
-          <label className="text-center">
-            Thickness<br/>
-              <input type="number" className="border w-24 text-right" min={1} value={toolSize} onChange={e => dispatch(setToolSize(e.target.valueAsNumber))} />
-          </label>
+          <StrokeThickness />
+          <RibbonDivider />
+          <RibbonColorPicker label="Pencil Colour" value={toolStrokeColor} onChange={(value) => dispatch(setToolStrokeColor(value))} alpha={1} />
+        </RibbonTab>
+      }
+      {store.ui.tool === "shapes" && <RibbonTab id="shapes" label="Shapes"><ShapeTab /></RibbonTab>}
+      {
+        store.ui.tool === "line" &&
+        <RibbonTab id="line" label="Line">
+          <FillStrokeControls />
           <RibbonDivider />
             <label className="text-center">
-              Pencil Colour <br />
-              <input type="color" className="size-14" value={toolStrokeColor} onChange={e => dispatch(setToolStrokeColor(e.target.value))} />
+              Line Cap<br />
+              <select value={toolLineCap} onChange={e => dispatch(setToolOptions({ lineCap: e.target.value as CanvasLineCap }))}>
+                <option value="butt">Butt</option>
+                <option value="square">Square</option>
+                <option value="round">Round</option>
+              </select>
             </label>
         </RibbonTab>
       }
-      { store.ui.tool === "shapes" && <RibbonTab id="shapes" label="Shapes"><ShapeTab /></RibbonTab> }
     </Ribbon>
   )
+}
+
+function StrokeThickness() {
+  const store = useContext(StoreContext)
+  const dispatch = useContext(DispatchContext);
+
+  const toolSize = store.ui.toolOptions.size;
+
+  return (
+    <label className="text-center">
+      Thickness<br />
+      <input type="number" className="border w-24 text-right" min={1} value={toolSize} onChange={e => dispatch(setToolSize(e.target.valueAsNumber))} />
+    </label>
+  );
 }

@@ -1,4 +1,4 @@
-import { BaseLayer, CompositeLayer } from "../../types";
+import { BaseLayer, CompositeLayer, InputProperties } from "../../types";
 
 export enum ActionTypes {
   NEW_DOCUMENT = "project/newDocument",
@@ -110,7 +110,7 @@ export function editCompositeLayer(
 export function editCompositeLayerInput(
   id: number,
   index: number,
-  properties: any
+  properties: Partial<InputProperties>
 ): EditCompositeLayerInputAction {
   return {
     type: ActionTypes.EDIT_COMPOSITE_LAYER_INPUT,
