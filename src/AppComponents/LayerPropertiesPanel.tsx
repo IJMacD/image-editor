@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
 import { Layer } from "../types";
-import { appendCompositeLayerInput } from "../Store/project/actions";
+import { appendCompositeLayerInput, editLayer } from "../Store/project/actions";
 
 export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
     const store = useContext(StoreContext);
@@ -14,6 +14,13 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
 
     const [selectedInsertLayer, setSelectedInsertLayer] = useState(nonRootLayers[0]?.id);
 
+    function handleRename() {
+        const name = prompt("Enter name", layer.name);
+        if (name) {
+            dispatch(editLayer(layer.id, { name }))
+        }
+    }
+
     function handleInsertInput() {
         if (isCompositeLayer(layer) && typeof selectedInsertLayer === "number") {
             dispatch(appendCompositeLayerInput(layer.id, selectedInsertLayer));
@@ -21,16 +28,20 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
     }
 
     return (
-        <div>
+        <div className="p-2 border-b-1 border-b-gray-200">
             <b>{layer.name}</b>
+            <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
             <p>{layer.width}×{layer.height}</p>
             {isCompositeLayer(layer) &&
                 <div>
-                    <select value={selectedInsertLayer} onChange={e => setSelectedInsertLayer(+e.target.value)}>
-                        {
-                            nonRootLayers.map((layer) => <option key={layer.id} value={layer.id}>{layer.name}</option>)
-                        }
-                    </select>
+                    <label>
+                        <span className="mr-1">Add Layer</span>
+                        <select value={selectedInsertLayer} onChange={e => setSelectedInsertLayer(+e.target.value)} className="border-1 rounded border-gray-300">
+                            {
+                                nonRootLayers.map((layer) => <option key={layer.id} value={layer.id}>{layer.name}</option>)
+                            }
+                        </select>
+                    </label>
                     <button onClick={handleInsertInput} className={`rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 hover:bg-gray-200`}>➕</button>
                 </div>
             }

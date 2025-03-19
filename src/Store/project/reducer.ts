@@ -60,22 +60,23 @@ export function projectReducer(
 
                 const { id, isComposite, parent, ...rest } = action.payload;
 
-                const newLayer = isComposite ? {
-                    id,
-                    name: `Composition ${id}`,
-                    width,
-                    height,
-                    inputs: [],
-                    ...rest,
-
-                } : {
-                    id,
-                    name: `Layer ${id}`,
-                    width,
-                    height,
-                    canvas: null,
-                        ...rest,
-                };
+                const newLayer = isComposite
+                    ? {
+                          id,
+                          name: `Composition ${id}`,
+                          width,
+                          height,
+                          inputs: [],
+                          ...rest,
+                      }
+                    : {
+                          id,
+                          name: `Layer ${id}`,
+                          width,
+                          height,
+                          canvas: null,
+                          ...rest,
+                      };
 
                 return {
                     ...state,
@@ -186,24 +187,87 @@ export function projectReducer(
             return (
                 state && {
                     ...state,
-                    layers: state.layers.map(layer => layer.id === action.payload.id && isCompositeLayer(layer) ?
-                        { ...layer, inputs: [...layer.inputs, { id: action.payload.childID, x: 0, y: 0, enabled: true, operation: "source-over", parameters: {} }] } :
-                        layer
-                    )
+                    layers: state.layers.map((layer) =>
+                        layer.id === action.payload.id &&
+                        isCompositeLayer(layer)
+                            ? {
+                                  ...layer,
+                                  inputs: [
+                                      ...layer.inputs,
+                                      {
+                                          id: action.payload.childID,
+                                          x: 0,
+                                          y: 0,
+                                          enabled: true,
+                                          operation: "source-over",
+                                          parameters: {},
+                                      },
+                                  ],
+                              }
+                            : layer
+                    ),
                 }
-            )
+            );
         }
 
         case ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT: {
             return (
                 state && {
                     ...state,
-                    layers: state.layers.map(layer => layer.id === action.payload.id && isCompositeLayer(layer) ?
-                        { ...layer, inputs: [...layer.inputs.slice(0, action.payload.index), ...layer.inputs.slice(action.payload.index + 1)] } :
-                        layer
-                    )
+                    layers: state.layers.map((layer) =>
+                        layer.id === action.payload.id &&
+                        isCompositeLayer(layer)
+                            ? {
+                                  ...layer,
+                                  inputs: [
+                                      ...layer.inputs.slice(
+                                          0,
+                                          action.payload.index
+                                      ),
+                                      ...layer.inputs.slice(
+                                          action.payload.index + 1
+                                      ),
+                                  ],
+                              }
+                            : layer
+                    ),
                 }
-            )
+            );
+        }
+
+        case ActionTypes.MOVE_COMPOSITE_LAYER_INPUT: {
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map((layer) => {
+                        if (
+                            layer.id === action.payload.id &&
+                            isCompositeLayer(layer)
+                        ) {
+                            const inputs = [...layer.inputs];
+                            const { index, direction } = action.payload;
+
+                            if (
+                                direction < 0
+                                    ? index <= 0
+                                    : index >= inputs.length - 1
+                            ) {
+                                return layer;
+                            }
+
+                            const input = inputs[index];
+                            inputs[index] = inputs[index + direction];
+                            inputs[index + direction] = input;
+
+                            return {
+                                ...layer,
+                                inputs,
+                            };
+                        }
+                        return layer;
+                    }),
+                }
+            );
         }
 
         case ActionTypes.DELETE_LAYER:

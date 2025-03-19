@@ -1,4 +1,4 @@
-import { BaseLayer, CompositeLayer, InputProperties } from "../../types";
+import { BaseLayer, CompositeLayer, InputProperties, Layer } from "../../types";
 
 export enum ActionTypes {
     NEW_DOCUMENT = "project/newDocument",
@@ -10,6 +10,7 @@ export enum ActionTypes {
     EDIT_COMPOSITE_LAYER_INPUT = "project/editCompositeLayerInput",
     APPEND_COMPOSITE_LAYER_INPUT = "project/appendCompositeLayerInput",
     REMOVE_COMPOSITE_LAYER_INPUT = "project/removeCompositeLayerInput",
+    MOVE_COMPOSITE_LAYER_INPUT = "project/moveCompositeLayerInput",
     NEW_COMPOSITION = "project/newComposition",
     APPLY_LAYER_FILTER = "project/applyLayerFilter",
 }
@@ -25,6 +26,13 @@ type NewLayerAction = {
         name?: string;
         width?: number;
         height?: number;
+    };
+};
+type EditLayerAction = {
+    type: ActionTypes.EDIT_LAYER;
+    payload: {
+        id: number;
+        properties: Partial<Omit<Layer, "id">>;
     };
 };
 type EditBaseLayerAction = {
@@ -60,14 +68,19 @@ type EditCompositeLayerInputAction = {
 };
 
 type AppendCompositeLayerInputAction = {
-    type: ActionTypes.APPEND_COMPOSITE_LAYER_INPUT,
-    payload: { id: number, childID: number },
-}
+    type: ActionTypes.APPEND_COMPOSITE_LAYER_INPUT;
+    payload: { id: number; childID: number };
+};
 
 type RemoveCompositeLayerInputAction = {
-    type: ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT,
-    payload: { id: number, index: number },
-}
+    type: ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT;
+    payload: { id: number; index: number };
+};
+
+type MoveCompositeLayerInputAction = {
+    type: ActionTypes.MOVE_COMPOSITE_LAYER_INPUT;
+    payload: { id: number; index: number; direction: -1 | 1 };
+};
 
 type DeleteLayerAction = {
     type: ActionTypes.DELETE_LAYER;
@@ -88,6 +101,7 @@ export type Action =
     | EditCompositeLayerInputAction
     | AppendCompositeLayerInputAction
     | RemoveCompositeLayerInputAction
+    | MoveCompositeLayerInputAction
     | DeleteLayerAction
     | ApplyLayerFilterAction;
 
@@ -107,7 +121,17 @@ export function newBaseLayer(id: number, parent: number): NewLayerAction {
 export function newCompositeLayer(id: number, parent: number): NewLayerAction {
     return {
         type: ActionTypes.NEW_LAYER,
-        payload: { id, parent, isComposite: true, },
+        payload: { id, parent, isComposite: true },
+    };
+}
+
+export function editLayer(
+    id: number,
+    properties: Partial<Omit<Layer, "id">>
+): EditLayerAction {
+    return {
+        type: ActionTypes.EDIT_LAYER,
+        payload: { id, properties },
     };
 }
 
@@ -147,18 +171,35 @@ export function editCompositeLayerInput(
     };
 }
 
-export function appendCompositeLayerInput(id: number, childID: number): AppendCompositeLayerInputAction {
+export function appendCompositeLayerInput(
+    id: number,
+    childID: number
+): AppendCompositeLayerInputAction {
     return {
         type: ActionTypes.APPEND_COMPOSITE_LAYER_INPUT,
         payload: { id, childID },
-    }
+    };
 }
 
-export function removeCompositeLayerInput(id: number, index: number): RemoveCompositeLayerInputAction {
+export function removeCompositeLayerInput(
+    id: number,
+    index: number
+): RemoveCompositeLayerInputAction {
     return {
         type: ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT,
         payload: { id, index },
-    }
+    };
+}
+
+export function moveCompositeLayerInput(
+    id: number,
+    index: number,
+    direction: -1 | 1
+): MoveCompositeLayerInputAction {
+    return {
+        type: ActionTypes.MOVE_COMPOSITE_LAYER_INPUT,
+        payload: { id, index, direction },
+    };
 }
 
 export function deleteLayer(id: number): DeleteLayerAction {
