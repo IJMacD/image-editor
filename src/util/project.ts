@@ -5,7 +5,7 @@ export function getLayerByID(layers: Layer[] = [], id: number) {
 }
 
 export function getCompositeLayerByID(
-  layers: Layer[],
+  layers: Layer[] = [],
   id: number
 ): CompositeLayer | undefined {
   return layers.find(

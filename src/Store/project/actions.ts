@@ -5,6 +5,7 @@ export enum ActionTypes {
     NEW_LAYER = "project/newLayer",
     EDIT_LAYER = "project/editLayer",
     DELETE_LAYER = "project/deleteLayer",
+    NEW_COMPOSITE_LAYER = "project/newCompositeLayer",
     EDIT_COMPOSITE_LAYER = "project/editCompositeLayer",
     EDIT_COMPOSITE_LAYER_INPUT = "project/editCompositeLayerInput",
     NEW_COMPOSITION = "project/newComposition",
@@ -17,9 +18,9 @@ type NewLayerAction = {
     type: ActionTypes.NEW_LAYER;
     payload: {
         id: number;
+        parent: number;
+        isComposite: boolean;
         name?: string;
-        x?: number;
-        y?: number;
         width?: number;
         height?: number;
     };
@@ -82,10 +83,17 @@ export function newDocument(): NewDocumentAction {
     };
 }
 
-export function newLayer(id: number): NewLayerAction {
+export function newBaseLayer(id: number, parent: number): NewLayerAction {
     return {
         type: ActionTypes.NEW_LAYER,
-        payload: { id },
+        payload: { id, parent, isComposite: false },
+    };
+}
+
+export function newCompositeLayer(id: number, parent: number): NewLayerAction {
+    return {
+        type: ActionTypes.NEW_LAYER,
+        payload: { id, parent, isComposite: true, },
     };
 }
 

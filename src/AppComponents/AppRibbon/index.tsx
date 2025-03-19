@@ -3,7 +3,7 @@ import { Ribbon } from "../../Widgets/Ribbon";
 import { RibbonButton } from "../../Widgets/RibbonButton";
 import { RibbonDivider } from "../../Widgets/RibbonDivider";
 import { StoreContext, DispatchContext } from "../../Store/context";
-import { newComposition, newDocument, newLayer } from "../../Store/project/actions";
+import { newBaseLayer, newCompositeLayer, newComposition, newDocument } from "../../Store/project/actions";
 import { RibbonTab } from "../../Widgets/RibbonTab";
 import { selectProject } from "../../Store/project/selectors";
 import { setRibbonTab, setToolOptions, setToolSize } from "../../Store/ui/actions";
@@ -12,7 +12,7 @@ import { ShapeTab } from "./ShapeTab";
 import { RibbonColorPicker } from "../../Widgets/RibbonColorPicker";
 import { FillStrokeControls } from "./common";
 import { LayerTab } from "./LayerTab";
-import { selectActiveLayer } from "../../Store/selectors";
+import { selectActiveLayer, selectNearestParent } from "../../Store/selectors";
 
 export function AppRibbon () {
   const store = useContext(StoreContext);
@@ -38,8 +38,18 @@ export function AppRibbon () {
         <RibbonButton icon="💾" label="Save" disabled={!project} />
         <RibbonButton icon="🖼️" label="Export" disabled={!project} />
         <RibbonDivider />
-        <RibbonButton icon="➕" label="New Layer" onClick={() => store.project && dispatch(newLayer(getNextLayerID(store.project)))} disabled={!project} />
-        <RibbonButton icon="❎" label="New Composite Layer" onClick={() => store.project && dispatch(newLayer(getNextLayerID(store.project)))} disabled={!project} />
+        <RibbonButton icon="➕" label="New Layer" onClick={() => {
+          const parent = selectNearestParent(store);
+          if (store.project && typeof parent === "number") {
+            dispatch(newBaseLayer(getNextLayerID(store.project), parent))
+          }
+        }} disabled={!project} />
+        <RibbonButton icon="❎" label="New Composite Layer" onClick={() => {
+          const parent = selectNearestParent(store);
+          if (store.project && typeof parent === "number") {
+            dispatch(newCompositeLayer(getNextLayerID(store.project), parent));
+          }
+        }} disabled={!project} />
         <RibbonDivider />
         <RibbonButton icon="🪄" label="New Composition" onClick={() => dispatch(newComposition())} disabled={!project} />
       </RibbonTab>

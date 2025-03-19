@@ -19,7 +19,7 @@ function App() {
   const dampedUIState = useThrottle(store.ui)
   useEffect(() => {
     saveUIState(dampedUIState);
-  }, [dampedUIState]);
+  }, [dampedUIState, saveUIState]);
 
   useKeyboardShortcuts(store, dispatch);
 

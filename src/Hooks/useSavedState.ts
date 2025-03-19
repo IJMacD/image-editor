@@ -27,7 +27,7 @@ export function useSavedState<T>(
         } catch (e) {
             console.error("Unable to save state", e);
         }
-    }, [state]);
+    }, [key, state]);
 
     return [state, setState];
 }

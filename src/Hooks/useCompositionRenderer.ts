@@ -6,7 +6,6 @@ export function useCompositionRenderer(
   compositeLayer: CompositeLayer,
   project: ImageProject
 ) {
-  const { layers } = project;
 
   return useMemo(() => {
     const canvas = document.createElement("canvas");
@@ -18,7 +17,7 @@ export function useCompositionRenderer(
     }
 
     return canvas;
-  }, [layers, compositeLayer]);
+  }, [compositeLayer, project]);
 }
 
 function renderToCanvas(
@@ -36,7 +35,11 @@ function renderToCanvas(
 
     if (c.enabled && layer) {
       if (isCompositeLayer(layer)) {
-        renderToCanvas(canvas, layer, project);
+        const subCanvas = document.createElement("canvas");
+        subCanvas.width = layer.width;
+        subCanvas.height = layer.height;
+        renderToCanvas(subCanvas, layer, project);
+        ctx.drawImage(subCanvas, c.x, c.y);
       } else if (layer.canvas) {
         ctx.drawImage(layer.canvas, c.x, c.y);
       }

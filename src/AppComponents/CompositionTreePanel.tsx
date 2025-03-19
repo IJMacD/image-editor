@@ -1,8 +1,9 @@
-import { useContext } from "react";
+import { MouseEvent, useContext } from "react";
 import { CompositeLayer, ImageProject, InputProperties } from "../types";
 import { getLayerByID, isCompositeLayer } from "../util/project";
 import { DispatchContext } from "../Store/context";
 import { deleteLayer, editBaseLayer, editCompositeLayerInput } from "../Store/project/actions";
+import { setActiveLayer } from "../Store/ui/actions";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     const dispatch = useContext(DispatchContext);
@@ -13,7 +14,11 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                 project.compositions.map((id, i) => {
                     const compositeLayer = project.layers.find(l => l.id === id && isCompositeLayer(l)) as CompositeLayer|undefined;
 
-                    function handleRename () {
+                    function handleRename(e: MouseEvent) {
+                        if (e.ctrlKey || e.metaKey) {
+                            dispatch(setActiveLayer(id));
+                            return;
+                        }
                         if (compositeLayer) {
                             const name = prompt("Enter name", compositeLayer.name);
                             if (name) {
@@ -24,8 +29,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
 
                     return compositeLayer ?
                         <li key={i}>
-                            <b>{compositeLayer.name}</b>
-                            <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
+                            <b className="cursor-pointer hover:underline hover decoration-dotted" onClick={handleRename}>{compositeLayer.name}</b>
                             <CompositionTree compositeLayer={compositeLayer} project={project} />
                         </li> :
                         <li key={i} className="text-red">Cannot find layer</li>
@@ -43,50 +47,50 @@ function CompositionTree ({ compositeLayer, project }: { compositeLayer: Composi
     }
 
     return (
-        <div>
-            <div className="flex place-items-center">
-                {/* <span className="flex-1">Composition: {composition.operation}</span> */}
-                {/* <button onClick={handleEditComposition}>✎</button> */}
-            </div>
-            <ul className="list-disc ml-4">
-                {
-                    compositeLayer.inputs.map((input, i) => {
-                        const layer = getLayerByID(project.layers, input.id);
-                        if (layer) {
-                            const l = layer;
+        <ul className="ml-2">
+            {
+                compositeLayer.inputs.map((input, i) => {
+                    const layer = getLayerByID(project.layers, input.id);
+                    if (layer) {
+                        const l = layer;
 
-                            function handleRename () {
-                                const name = prompt("Enter name", l.name);
-                                if (name) {
-                                    dispatch(editBaseLayer(l.id, { name }))
-                                }
+                        function handleRename(e: MouseEvent) {
+                            if (e.ctrlKey || e.metaKey) {
+                                dispatch(setActiveLayer(l.id));
+                                return;
                             }
 
-                            function handleDelete() {
-                                if (confirm(`Are you sure you want to delete '${l.name}'`)) {
-                                    dispatch(deleteLayer(l.id));
-                                }
+                            const name = prompt("Enter name", l.name);
+                            if (name) {
+                                dispatch(editBaseLayer(l.id, { name }))
                             }
-
-                            return (
-                                <li key={i} className="flex place-items-center">
-                                    <span className="flex-1">
-                                        {layer.name}
-                                        <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
-                                    </span>
-                                    <button onClick={() => handleEditInput(i, { enabled: !input.enabled })}>{input.enabled?"◉":"◎"}</button>
-                                    <CompositionModeSelect value={input.operation} onChange={(operation) => handleEditInput(i, { operation })} />
-                                    <button onClick={handleDelete}>🗑️</button>
-                                    { isCompositeLayer(layer) && <CompositionTree compositeLayer={layer} project={project} />}
-                                </li>
-                            );
                         }
 
-                        return <li key={i} className="text-red">Cannot find layer</li>;
-                    })
-                }
-            </ul>
-        </div>
+                        function handleDelete() {
+                            if (confirm(`Are you sure you want to delete '${l.name}'`)) {
+                                dispatch(deleteLayer(l.id));
+                            }
+                        }
+
+                        return (
+                            <li key={i}>
+                                <div className="flex place-items-center">
+                                    <span className="flex-1 cursor-pointer hover:underline hover:decoration-dotted" onClick={handleRename}>
+                                        {layer.name}
+                                    </span>
+                                    <button onClick={() => handleEditInput(i, { enabled: !input.enabled })}>{input.enabled ? "◉" : "◎"}</button>
+                                    <CompositionModeSelect value={input.operation} onChange={(operation) => handleEditInput(i, { operation })} />
+                                    <button onClick={handleDelete}>🗑️</button>
+                                </div>
+                                {isCompositeLayer(layer) && <CompositionTree compositeLayer={layer} project={project} />}
+                            </li>
+                        );
+                    }
+
+                    return <li key={i} className="text-red">Cannot find layer</li>;
+                })
+            }
+        </ul>
     )
 }
 

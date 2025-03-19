@@ -10,9 +10,10 @@ import {
 } from "../Store/ui/actions";
 import { Action } from "../Store/actions";
 import { useEffect } from "react";
-import { newLayer } from "../Store/project/actions";
+import { newBaseLayer, newCompositeLayer } from "../Store/project/actions";
 import { AppState } from "../Store/reducer";
 import { getNextLayerID } from "../util/project";
+import { selectNearestParent } from "../Store/selectors";
 
 export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<Action>) {
 
@@ -30,7 +31,10 @@ export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<A
                 case "l":
                 if (store.project) {
                     const nextID = getNextLayerID(store.project);
-                    dispatch(newLayer(nextID));
+                    const parent = selectNearestParent(store);
+                    if (typeof parent === "number") {
+                        dispatch(e.shiftKey ? newCompositeLayer(nextID, parent) : newBaseLayer(nextID, parent));
+                    }
                 }
                 e.preventDefault();
                 return;

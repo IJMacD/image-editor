@@ -1,5 +1,5 @@
 import { Editor } from "../../Editor";
-import { BaseLayer, ImageProject } from "../../types";
+import { ImageProject } from "../../types";
 import {
     getNextLayerID,
     isBaseLayer,
@@ -58,25 +58,30 @@ export function projectReducer(
             if (state) {
                 const { width, height } = state;
 
-                const { id } = action.payload;
+                const { id, isComposite, parent, ...rest } = action.payload;
 
-                const newLayer: BaseLayer = {
+                const newLayer = isComposite ? {
+                    id,
+                    name: `Composition ${id}`,
+                    width,
+                    height,
+                    inputs: [],
+                    ...rest,
+
+                } : {
+                    id,
                     name: `Layer ${id}`,
                     width,
                     height,
                     canvas: null,
-                    ...action.payload,
+                        ...rest,
                 };
-
-                const firstComposition = state.layers.find(
-                    (l) => l.id === state.compositions[0]
-                );
 
                 return {
                     ...state,
                     layers: [
                         ...state.layers.map((l) =>
-                            l === firstComposition && "inputs" in l
+                            l.id === parent && "inputs" in l
                                 ? {
                                       ...l,
                                       inputs: [
@@ -94,10 +99,7 @@ export function projectReducer(
                                   }
                                 : l
                         ),
-                        {
-                            ...newLayer,
-                            canvas: null,
-                        },
+                        newLayer,
                     ],
                 };
             }
