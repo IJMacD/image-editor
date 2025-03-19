@@ -177,6 +177,35 @@ export function projectReducer(
                 }
             );
 
+        case ActionTypes.APPEND_COMPOSITE_LAYER_INPUT: {
+            if (action.payload.childID === action.payload.id) {
+                // TODO: also check for loops
+                return state;
+            }
+
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map(layer => layer.id === action.payload.id && isCompositeLayer(layer) ?
+                        { ...layer, inputs: [...layer.inputs, { id: action.payload.childID, x: 0, y: 0, enabled: true, operation: "source-over", parameters: {} }] } :
+                        layer
+                    )
+                }
+            )
+        }
+
+        case ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT: {
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map(layer => layer.id === action.payload.id && isCompositeLayer(layer) ?
+                        { ...layer, inputs: [...layer.inputs.slice(0, action.payload.index), ...layer.inputs.slice(action.payload.index + 1)] } :
+                        layer
+                    )
+                }
+            )
+        }
+
         case ActionTypes.DELETE_LAYER:
             return (
                 state && {

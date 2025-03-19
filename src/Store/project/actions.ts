@@ -8,6 +8,8 @@ export enum ActionTypes {
     NEW_COMPOSITE_LAYER = "project/newCompositeLayer",
     EDIT_COMPOSITE_LAYER = "project/editCompositeLayer",
     EDIT_COMPOSITE_LAYER_INPUT = "project/editCompositeLayerInput",
+    APPEND_COMPOSITE_LAYER_INPUT = "project/appendCompositeLayerInput",
+    REMOVE_COMPOSITE_LAYER_INPUT = "project/removeCompositeLayerInput",
     NEW_COMPOSITION = "project/newComposition",
     APPLY_LAYER_FILTER = "project/applyLayerFilter",
 }
@@ -57,6 +59,16 @@ type EditCompositeLayerInputAction = {
     };
 };
 
+type AppendCompositeLayerInputAction = {
+    type: ActionTypes.APPEND_COMPOSITE_LAYER_INPUT,
+    payload: { id: number, childID: number },
+}
+
+type RemoveCompositeLayerInputAction = {
+    type: ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT,
+    payload: { id: number, index: number },
+}
+
 type DeleteLayerAction = {
     type: ActionTypes.DELETE_LAYER;
     payload: { id: number };
@@ -74,6 +86,8 @@ export type Action =
     | EditBaseLayerAction
     | EditCompositeLayerAction
     | EditCompositeLayerInputAction
+    | AppendCompositeLayerInputAction
+    | RemoveCompositeLayerInputAction
     | DeleteLayerAction
     | ApplyLayerFilterAction;
 
@@ -131,6 +145,20 @@ export function editCompositeLayerInput(
         type: ActionTypes.EDIT_COMPOSITE_LAYER_INPUT,
         payload: { id, index, properties },
     };
+}
+
+export function appendCompositeLayerInput(id: number, childID: number): AppendCompositeLayerInputAction {
+    return {
+        type: ActionTypes.APPEND_COMPOSITE_LAYER_INPUT,
+        payload: { id, childID },
+    }
+}
+
+export function removeCompositeLayerInput(id: number, index: number): RemoveCompositeLayerInputAction {
+    return {
+        type: ActionTypes.REMOVE_COMPOSITE_LAYER_INPUT,
+        payload: { id, index },
+    }
 }
 
 export function deleteLayer(id: number): DeleteLayerAction {

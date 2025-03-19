@@ -2,39 +2,51 @@ import { MouseEvent, useContext, useEffect, useState } from "react";
 import { CompositeLayer, ImageProject, InputProperties } from "../types";
 import { getLayerByID, isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
-import { deleteLayer, editBaseLayer, editCompositeLayerInput } from "../Store/project/actions";
+import { appendCompositeLayerInput, deleteLayer, editBaseLayer, editCompositeLayerInput, removeCompositeLayerInput } from "../Store/project/actions";
 import { setActiveLayer } from "../Store/ui/actions";
+import { LayerPropertiesPanel } from "./LayerPropertiesPanel";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     const store = useContext(StoreContext);
     const dispatch = useContext(DispatchContext);
 
-    const [selectedItem, setSelectedItem] = useState(store.project ? [store.project.compositions[0]] : []);
+    const [selectedPath, setSelectedPath] = useState(store.project ? [store.project.compositions[0]] : []);
+
 
     const { activeLayerID } = store.ui.layers;
 
-    const pathID = getLayerByPath(store.project, selectedItem)?.id;
+    const pathLayer = getLayerByPath(store.project, selectedPath);
+    const pathID = pathLayer?.id;
 
     useEffect(() => {
         if (pathID !== activeLayerID) {
-            setSelectedItem([]);
+            setSelectedPath([]);
         }
     }, [pathID, activeLayerID]);
 
     function handleDelete() {
-        const layer = getLayerByID(store.project?.layers, activeLayerID);
-        if (layer) {
-            if (confirm(`Are you sure you want to delete '${layer.name}'`)) {
-                dispatch(deleteLayer(activeLayerID));
+        if (pathLayer) {
+            if (confirm(`Are you sure you want to delete '${pathLayer.name}'`)) {
+                dispatch(deleteLayer(pathLayer.id));
+            }
+        }
+    }
+
+    function handleRemove() {
+        if (selectedPath.length > 1) {
+            const parent = getLayerByPath(project, selectedPath.slice(0, -1));
+            if (parent) {
+                dispatch(removeCompositeLayerInput(parent.id, selectedPath[selectedPath.length - 1]))
             }
         }
     }
 
     function handleLayerClick(id: number, indices: number[]) {
-        console.log({ id, indices });
         dispatch(setActiveLayer(id));
-        setSelectedItem(indices);
+        setSelectedPath(indices);
     }
+
+    const haveSelectedPath = selectedPath.length > 1;
 
     return (
         <div className="bg-white flow-root">
@@ -53,27 +65,31 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                             }
                         }
 
-                        const isSelected = selectedItem.length === 1 && selectedItem[0] === id;
+                        const isSelected = selectedPath.length === 1 && selectedPath[0] === id;
 
                         return compositeLayer ?
                             <li key={i}>
                                 <div className={isSelected ? "bg-gray-200" : undefined} onClick={() => handleLayerClick(id, [i])}>
                                     <span className={`cursor-pointer hover:underline hover decoration-dotted p-1`} onClick={handleRename}>{compositeLayer.name}</span>
                                 </div>
-                                <CompositionTree compositeLayer={compositeLayer} project={project} selectedItem={selectedItem} path={[i]} onClick={handleLayerClick} />
+                                <CompositionTree compositeLayer={compositeLayer} project={project} selectedPath={selectedPath} path={[i]} onClick={handleLayerClick} />
                             </li> :
                             <li key={i} className="text-red">Cannot find layer</li>
                     })
                 }
             </ul>
             <div>
-                <button onClick={handleDelete} className="rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 hover:bg-gray-200">🗑️</button>
+                <button onClick={handleRemove} className={`rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 ${haveSelectedPath ? "hover:bg-gray-200" : "opacity-50"}`} disabled={!haveSelectedPath}>❎</button>
+                <button onClick={handleDelete} className={`rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 ${haveSelectedPath ? "hover:bg-gray-200" : "opacity-50"}`} disabled={!haveSelectedPath}>🗑️</button>
+                <button onClick={handleDelete} className={`rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 ${haveSelectedPath ? "hover:bg-gray-200" : "opacity-50"}`} disabled={!haveSelectedPath}>↓</button>
+                <button onClick={handleDelete} className={`rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 ${haveSelectedPath ? "hover:bg-gray-200" : "opacity-50"}`} disabled={!haveSelectedPath}>↑</button>
             </div>
+            {pathLayer && <LayerPropertiesPanel layer={pathLayer} />}
         </div>
     )
 }
 
-function CompositionTree({ compositeLayer, project, selectedItem, onClick, path }: { compositeLayer: CompositeLayer, project: ImageProject, selectedItem: number[], onClick: (id: number, path: number[]) => void, path: number[] }) {
+function CompositionTree({ compositeLayer, project, selectedPath, onClick, path }: { compositeLayer: CompositeLayer, project: ImageProject, selectedPath: number[], onClick: (id: number, path: number[]) => void, path: number[] }) {
     const dispatch = useContext(DispatchContext);
 
     function handleEditInput(index: number, properties: Partial<InputProperties>) {
@@ -96,7 +112,7 @@ function CompositionTree({ compositeLayer, project, selectedItem, onClick, path 
                             }
                         }
 
-                        const isSelected = pathsEqual(selectedItem, myPath);
+                        const isSelected = pathsEqual(selectedPath, myPath);
 
                         return (
                             <li key={i}>
@@ -109,7 +125,7 @@ function CompositionTree({ compositeLayer, project, selectedItem, onClick, path 
                                     <CompositionModeSelect value={input.operation} onChange={(operation) => handleEditInput(i, { operation })} />
                                     <button className="ml-1 w-4" onClick={() => handleEditInput(i, { enabled: !input.enabled })}>{input.enabled ? "◉" : "◎"}</button>
                                 </div>
-                                {isCompositeLayer(layer) && <CompositionTree compositeLayer={layer} project={project} selectedItem={selectedItem} onClick={onClick} path={[...path, i]} />}
+                                {isCompositeLayer(layer) && <CompositionTree compositeLayer={layer} project={project} selectedPath={selectedPath} onClick={onClick} path={[...path, i]} />}
                             </li>
                         );
                     }

@@ -102,5 +102,5 @@ export function useKeyboardShortcuts(store: AppState, dispatch: React.Dispatch<A
       document.addEventListener("keydown", cb);
 
       return () => document.removeEventListener("keydown", cb);
-    }, [store.project, dispatch, store.ui]);
+    }, [store.project, dispatch, store]);
 }
