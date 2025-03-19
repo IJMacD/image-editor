@@ -26,7 +26,7 @@ export const defaultUIState: UIState = {
 export function uiReducer(state: UIState, action: Action): UIState {
     switch (action.type) {
         case ActionTypes.SET_TOOL: {
-            let fillStroke = state.toolOptions.fillStroke;
+            const fillStroke = state.toolOptions.fillStroke;
             return {
                 ...state,
                 tool: action.payload.tool,

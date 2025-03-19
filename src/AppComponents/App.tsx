@@ -32,7 +32,7 @@ function App() {
           <div className='bg-red-200 w-16 flex flex-col place-items-center'>
             <ToolSelector />
           </div>
-          <div className='bg-blue-100 flex-2'>
+          <div className='bg-blue-100 flex-2 overflow-hidden'>
             { store.project && <LayersPanel project={store.project} /> }
           </div>
           <div className='bg-teal-100 flex-1'>
