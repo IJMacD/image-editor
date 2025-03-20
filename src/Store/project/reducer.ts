@@ -27,6 +27,7 @@ export const defaultProjectState: ImageProject = {
                     y: 0,
                     enabled: true,
                     operation: "source-over" as GlobalCompositeOperation,
+                    filter: "",
                     parameters: {},
                 },
             ],
@@ -94,6 +95,7 @@ export function projectReducer(
                                               enabled: true,
                                               operation:
                                                   "source-over" as GlobalCompositeOperation,
+                                              filter: "",
                                               parameters: {},
                                           },
                                       ],
@@ -200,6 +202,7 @@ export function projectReducer(
                                           y: 0,
                                           enabled: true,
                                           operation: "source-over",
+                                          filter: "",
                                           parameters: {},
                                       },
                                   ],

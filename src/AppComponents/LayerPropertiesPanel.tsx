@@ -33,7 +33,7 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
             <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
             <p>{layer.width}×{layer.height}</p>
             {isCompositeLayer(layer) &&
-                <div>
+                <div className="whitespace-nowrap">
                     <label>
                         <span className="mr-1">Add Layer</span>
                         <select value={selectedInsertLayer} onChange={e => setSelectedInsertLayer(+e.target.value)} className="border-1 rounded border-gray-300">

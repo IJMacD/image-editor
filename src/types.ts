@@ -21,6 +21,7 @@ export interface InputProperties {
     y: number;
     enabled: boolean;
     operation: GlobalCompositeOperation;
+    filter: string;
     parameters: object;
 }
 

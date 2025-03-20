@@ -44,7 +44,7 @@ export function AppRibbon () {
             dispatch(newBaseLayer(getNextLayerID(store.project), parent))
           }
         }} disabled={!project} />
-        <RibbonButton icon="✳️" label="New Composite Layer" onClick={() => {
+        <RibbonButton icon="✳️" label="New Composite" onClick={() => {
           const parent = selectNearestParent(store);
           if (store.project && typeof parent === "number") {
             dispatch(newCompositeLayer(getNextLayerID(store.project), parent));

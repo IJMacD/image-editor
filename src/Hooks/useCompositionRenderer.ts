@@ -32,6 +32,7 @@ function renderToCanvas(
   for (const c of layer.inputs) {
     const layer = getLayerByID(project.layers, c.id);
     ctx.globalCompositeOperation = c.operation;
+    ctx.filter = c.filter || "none";
 
     if (c.enabled && layer) {
       if (isCompositeLayer(layer)) {
