@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { RibbonColorPicker } from "../../Widgets/RibbonColorPicker";
 import { DispatchContext, StoreContext } from "../../Store/context";
-import { setFillStroke, setToolColor, setToolOptions, setToolSize, setToolStrokeColor } from "../../Store/ui/actions";
+import { setFillStroke, setToolOptions, setToolSize } from "../../Store/ui/actions";
 
 export function FillStrokeControls() {
     const store = useContext(StoreContext);
@@ -37,8 +37,12 @@ export function FillStrokeControls() {
     }
 
     function handleSwapColours() {
-        dispatch(setToolColor(toolStrokeColor));
-        dispatch(setToolStrokeColor(toolFillColor));
+        dispatch(setToolOptions({
+            color: toolStrokeColor,
+            strokeColor: toolFillColor,
+            fillAlpha: toolStrokeAlpha,
+            strokeAlpha: toolFillAlpha,
+        }));
     }
 
     return (
