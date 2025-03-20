@@ -21,6 +21,9 @@ export const defaultUIState: UIState = {
     layers: {
         activeLayerID: 1,
     },
+    inputs: {
+        selectedPath: [0],
+    },
 };
 
 export function uiReducer(state: UIState, action: Action): UIState {
@@ -32,7 +35,10 @@ export function uiReducer(state: UIState, action: Action): UIState {
                 tool: action.payload.tool,
                 toolOptions: {
                     ...state.toolOptions,
-                    fillStroke: action.payload.tool === "line" && fillStroke === "fill" ? "both" : fillStroke,
+                    fillStroke:
+                        action.payload.tool === "line" && fillStroke === "fill"
+                            ? "both"
+                            : fillStroke,
                 },
                 ribbon: { ...state.ribbon, selectedTabID: action.payload.tool },
             };
@@ -47,7 +53,10 @@ export function uiReducer(state: UIState, action: Action): UIState {
                 ...state,
                 toolOptions: {
                     ...state.toolOptions,
-                    size: Math.max(state.toolOptions.size + action.payload.change, 1),
+                    size: Math.max(
+                        state.toolOptions.size + action.payload.change,
+                        1
+                    ),
                 },
             };
         case ActionTypes.RIBBON_SET_TAB:
@@ -68,7 +77,17 @@ export function uiReducer(state: UIState, action: Action): UIState {
                 ...state,
                 layers: {
                     ...state.layers,
-                    activeLayerID: action.payload.id || state.layers.activeLayerID,
+                    activeLayerID:
+                        action.payload.id || state.layers.activeLayerID,
+                },
+            };
+
+        case ActionTypes.SET_SELECTED_INPUT_PATH:
+            return {
+                ...state,
+                inputs: {
+                    ...state.inputs,
+                    selectedPath: action.payload.path,
                 },
             };
     }

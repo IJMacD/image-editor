@@ -1,16 +1,18 @@
-import { MouseEvent, useContext, useState } from "react";
+import { useContext } from "react";
 import { CompositeLayer, ImageProject, InputProperties } from "../types";
 import { getLayerByID, isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
-import { deleteLayer, editBaseLayer, editCompositeLayerInput, moveCompositeLayerInput, removeCompositeLayerInput } from "../Store/project/actions";
+import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, removeCompositeLayerInput } from "../Store/project/actions";
 import { LayerPropertiesPanel } from "./LayerPropertiesPanel";
 import { InputPropertiesPanel } from "./InputPropertiesPanel";
+import { setActiveLayer, setSelectedInputPath } from "../Store/ui/actions";
+import { getInputByPath, getLayerByPath, pathsEqual } from "../util/ui";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     const store = useContext(StoreContext);
     const dispatch = useContext(DispatchContext);
 
-    const [selectedPath, setSelectedPath] = useState(store.project ? [store.project.compositions[0]] : []);
+    const { selectedPath } = store.ui.inputs;
 
     const pathInput = getInputByPath(store.project, selectedPath);
     const pathIndex = selectedPath[selectedPath.length - 1];
@@ -36,12 +38,12 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     function handleMove (direction: -1|1) {
         if (pathParent) {
             dispatch(moveCompositeLayerInput(pathParent.id, pathIndex, direction))
-            setSelectedPath([...selectedPath.slice(0, -1), pathIndex+direction])
+            dispatch(setSelectedInputPath([...selectedPath.slice(0, -1), pathIndex+direction]));
         }
     }
 
-    function handleLayerClick(id: number, indices: number[]) {
-        setSelectedPath(indices);
+    function handleLayerClick(indices: number[]) {
+        dispatch(setSelectedInputPath(indices));
     }
 
     function handleInputEdit (properties: Partial<InputProperties>) {
@@ -61,22 +63,12 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                     project.compositions.map((id, i) => {
                         const compositeLayer = project.layers.find(l => l.id === id && isCompositeLayer(l)) as CompositeLayer | undefined;
 
-                        function handleRename(e: MouseEvent) {
-                            e.stopPropagation();
-                            if (compositeLayer) {
-                                const name = prompt("Enter name", compositeLayer.name);
-                                if (name) {
-                                    dispatch(editBaseLayer(compositeLayer.id, { name }))
-                                }
-                            }
-                        }
-
                         const isSelected = selectedPath.length === 1 && selectedPath[0] === id;
 
                         return compositeLayer ?
                             <li key={i}>
-                                <div className={isSelected ? "bg-gray-200" : undefined} onClick={() => handleLayerClick(id, [i])}>
-                                    <span className={`cursor-pointer hover:underline hover decoration-dotted p-1`} onClick={handleRename}>{compositeLayer.name}</span>
+                                <div className={isSelected ? "bg-gray-200" : undefined} onClick={(e) => { if (e.altKey) { dispatch(setActiveLayer(id)); } handleLayerClick([i]); }}>
+                                    {compositeLayer.name}
                                 </div>
                                 <CompositionTree compositeLayer={compositeLayer} project={project} selectedPath={selectedPath} path={[i]} onClick={handleLayerClick} />
                             </li> :
@@ -96,7 +88,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     )
 }
 
-function CompositionTree({ compositeLayer, project, selectedPath, onClick, path }: { compositeLayer: CompositeLayer, project: ImageProject, selectedPath: number[], onClick: (id: number, path: number[]) => void, path: number[] }) {
+function CompositionTree({ compositeLayer, project, selectedPath, onClick, path }: { compositeLayer: CompositeLayer, project: ImageProject, selectedPath: number[], onClick: (path: number[]) => void, path: number[] }) {
     const dispatch = useContext(DispatchContext);
 
     function handleEditInput(index: number, properties: Partial<InputProperties>) {
@@ -109,25 +101,15 @@ function CompositionTree({ compositeLayer, project, selectedPath, onClick, path 
                 compositeLayer.inputs.map((input, i) => {
                     const layer = getLayerByID(project.layers, input.id);
                     if (layer) {
-                        const l = layer;
                         const myPath = [...path, i];
-
-                        function handleRename() {
-                            const name = prompt("Enter name", l.name);
-                            if (name) {
-                                dispatch(editBaseLayer(l.id, { name }))
-                            }
-                        }
 
                         const isSelected = pathsEqual(selectedPath, myPath);
 
                         return (
                             <li key={i}>
                                 <div className={`flex place-items-center p-1 ${isSelected ? "bg-gray-200" : "undefined"}`}>
-                                    <div className="flex-1" onClick={(e) => e.currentTarget === e.target && onClick(l.id, myPath)} >
-                                        <span className="cursor-pointer hover:underline hover:decoration-dotted" onClick={handleRename}>
-                                            {layer.name}
-                                        </span>
+                                    <div className="flex-1" onClick={(e) => { if (e.altKey) { dispatch(setActiveLayer(layer.id)); } onClick(myPath); }} >
+                                        {layer.name}
                                     </div>
                                     <CompositionModeSelect value={input.operation} onChange={(operation) => handleEditInput(i, { operation })} />
                                     <button className="ml-1 w-4" onClick={() => handleEditInput(i, { enabled: !input.enabled })}>{input.enabled ? "◉" : "◎"}</button>
@@ -142,79 +124,6 @@ function CompositionTree({ compositeLayer, project, selectedPath, onClick, path 
             }
         </ul>
     )
-}
-
-function pathsEqual<T>(a: T[], b: T[]): boolean {
-    if (a.length !== b.length) return false;
-
-    for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return false;
-    }
-
-    return true;
-}
-
-function getInputByPath(project: ImageProject | null, path: number[]) {
-    if (!project) {
-        return undefined;
-    }
-
-    const [compositionIndex, ...p] = path;
-
-    const id = typeof compositionIndex === "number" && project.compositions[compositionIndex];
-
-    if (typeof id !== "number") {
-        return undefined;
-    }
-
-    let layer = getLayerByID(project.layers, id);
-
-    if (!isCompositeLayer(layer)) {
-        return undefined
-    }
-
-    let input = null as InputProperties|null;
-
-    for (const index of p) {
-        if (isCompositeLayer(layer)) {
-            input = layer.inputs[index];
-            const id = input?.id;
-
-            layer = getLayerByID(project.layers, id);
-        }
-    }
-
-    return input;
-}
-
-function getLayerByPath(project: ImageProject | null, path: number[]) {
-    if (!project) {
-        return undefined;
-    }
-
-    const [compositionIndex, ...p] = path;
-
-    const id = typeof compositionIndex === "number" && project.compositions[compositionIndex];
-
-    if (typeof id !== "number") {
-        return undefined;
-    }
-
-    let layer = getLayerByID(project.layers, id);
-
-    if (!isCompositeLayer(layer)) {
-        return undefined
-    }
-
-    for (const index of p) {
-        if (isCompositeLayer(layer)) {
-            const id = layer.inputs[index]?.id;
-
-            layer = getLayerByID(project.layers, id);
-        }
-    }
-
-    return layer;
 }
 
 const CompositionModes = [

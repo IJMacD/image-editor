@@ -54,4 +54,7 @@ export type UIState = {
     layers: {
         activeLayerID: number;
     };
+    inputs: {
+        selectedPath: number[];
+    };
 };

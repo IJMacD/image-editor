@@ -34,7 +34,7 @@ export function LayerTab () {
         <>
             <RibbonButton icon="🖼️" label="Export" />
             <RibbonDivider />
-            <RibbonButton icon="↔️" label="Resize" />
+            <RibbonButton icon="↕️" label="Resize" />
             <RibbonDivider />
             <RibbonButton icon="☯" label="Invert" onClick={() => handleAction("invert")} />
             <RibbonButton icon="🖼" label="Greyscale" onClick={() => handleAction("greyscale")} />
