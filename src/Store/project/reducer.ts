@@ -23,9 +23,8 @@ export const defaultProjectState: ImageProject = {
             inputs: [
                 {
                     id: 1,
-                    x: 0,
-                    y: 0,
                     enabled: true,
+                    transform: new DOMMatrix([1, 0, 0, 1, 0, 0]),
                     operation: "source-over" as GlobalCompositeOperation,
                     filter: "",
                     parameters: {},
@@ -90,9 +89,10 @@ export function projectReducer(
                                           ...l.inputs,
                                           {
                                               id,
-                                              x: 0,
-                                              y: 0,
                                               enabled: true,
+                                              transform: new DOMMatrix([
+                                                  1, 0, 0, 1, 0, 0,
+                                              ]),
                                               operation:
                                                   "source-over" as GlobalCompositeOperation,
                                               filter: "",
@@ -198,9 +198,10 @@ export function projectReducer(
                                       ...layer.inputs,
                                       {
                                           id: action.payload.childID,
-                                          x: 0,
-                                          y: 0,
                                           enabled: true,
+                                          transform: new DOMMatrix([
+                                              1, 0, 0, 1, 0, 0,
+                                          ]),
                                           operation: "source-over",
                                           filter: "",
                                           parameters: {},

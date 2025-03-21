@@ -166,12 +166,11 @@ function handleArrows(
                     ? scale
                     : 0;
 
-            dispatch(
-                editCompositeLayerInput(id, index, {
-                    x: input.x + dx,
-                    y: input.y + dy,
-                })
-            );
+            const transform = DOMMatrix.fromMatrix(input.transform);
+            transform.e += dx;
+            transform.f += dy;
+
+            dispatch(editCompositeLayerInput(id, index, { transform }));
         }
     }
 }

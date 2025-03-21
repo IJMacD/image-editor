@@ -17,9 +17,8 @@ export interface BaseLayer {
 
 export interface InputProperties {
     id: number;
-    x: number;
-    y: number;
     enabled: boolean;
+    transform: DOMMatrix2DInit;
     operation: GlobalCompositeOperation;
     filter: string;
     parameters: object;

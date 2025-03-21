@@ -33,17 +33,18 @@ function renderToCanvas(
     const layer = getLayerByID(project.layers, c.id);
     ctx.globalCompositeOperation = c.operation;
     ctx.filter = c.filter || "none";
+    ctx.setTransform(c.transform);
 
     if (c.enabled && layer) {
-      if (isCompositeLayer(layer)) {
-        const subCanvas = document.createElement("canvas");
-        subCanvas.width = layer.width;
-        subCanvas.height = layer.height;
-        renderToCanvas(subCanvas, layer, project);
-        ctx.drawImage(subCanvas, c.x, c.y);
-      } else if (layer.canvas) {
-        ctx.drawImage(layer.canvas, c.x, c.y);
-      }
+        if (isCompositeLayer(layer)) {
+            const subCanvas = document.createElement("canvas");
+            subCanvas.width = layer.width;
+            subCanvas.height = layer.height;
+            renderToCanvas(subCanvas, layer, project);
+            ctx.drawImage(subCanvas, 0, 0);
+        } else if (layer.canvas) {
+            ctx.drawImage(layer.canvas, 0, 0);
+        }
     }
   }
 }

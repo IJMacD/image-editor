@@ -23,7 +23,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
   const pathIndex = selectedPath[selectedPath.length - 1];
   const pathParent = getLayerByPath(store.project, selectedPath.slice(0, -1));
   const pathInput = getInputByPath(store.project, selectedPath);
-  const pathInputRef = useRef({x: 0, y: 0});
+  const pathInputRef = useRef(new DOMMatrix([1,0,0,1,0,0]) as DOMMatrix2DInit);
   // Protect against invisible moves
   const isMovable = selectIsMovable(store)
 
@@ -71,7 +71,7 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
       setMouseDownPos({ x, y });
 
       if (tool === "move" && pathInput) {
-        pathInputRef.current = pathInput;
+        pathInputRef.current = pathInput.transform;
       }
     }
   }
@@ -89,10 +89,12 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
       if (tool === "move" && isMovable && pathParent && typeof pathIndex === "number") {
         const dx = x - mouseDownPos.x;
         const dy = y - mouseDownPos.y;
-        const x2 = pathInputRef.current.x + dx;
-        const y2 = pathInputRef.current.y + dy;
 
-        dispatch(editCompositeLayerInput(pathParent.id, pathIndex, { x: x2, y: y2 }))
+        const transform = DOMMatrix.fromMatrix(pathInputRef.current)
+        transform.e += dx;
+        transform.f += dy;
+
+        dispatch(editCompositeLayerInput(pathParent.id, pathIndex, { transform }))
       }
     }
   }, [mouseDownPos, editableLayer, tool, isMovable, pathParent, pathIndex]);
