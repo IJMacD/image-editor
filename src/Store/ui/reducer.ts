@@ -90,6 +90,18 @@ export function uiReducer(state: UIState, action: Action): UIState {
                     selectedPath: action.payload.path,
                 },
             };
+
+        case ProjectActionTypes.DELETE_LAYER:
+            if (state.layers.activeLayerID === action.payload.id) {
+                return {
+                    ...state,
+                    layers: {
+                        ...state.layers,
+                        activeLayerID: 0,
+                    },
+                };
+            }
+            return state;
     }
     return state;
 }

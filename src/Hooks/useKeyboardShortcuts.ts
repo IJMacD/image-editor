@@ -53,6 +53,9 @@ export function useKeyboardShortcuts(
             }
 
             switch (e.key) {
+                case "m":
+                    dispatch(setTool("move"));
+                    break;
                 case "p":
                     dispatch(setTool("pencil"));
                     break;

@@ -83,7 +83,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                 <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath}>↓</button>
             </div>
             {pathLayer && <LayerPropertiesPanel layer={pathLayer} />}
-            {pathInput && <InputPropertiesPanel input={pathInput} onEdit={handleInputEdit} />}
+            {pathInput && <InputPropertiesPanel key={getInputKey(selectedPath, pathInput)} input={pathInput} onEdit={handleInputEdit} />}
         </div>
     )
 }
@@ -163,4 +163,8 @@ function CompositionModeSelect ({ value, onChange }: { value: GlobalCompositeOpe
             }
         </select>
     )
+}
+
+function getInputKey (path: number[], input: InputProperties) {
+    return path.join() + "|" + input.id;
 }

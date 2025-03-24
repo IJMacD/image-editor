@@ -26,18 +26,6 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
 
   const className = 'bg-white flex-2 h-full p-4 flex place-items-center justify-center';
 
-  useEffect(() => {
-    if (selectedIndex < 0 && layers.length > 0) {
-      const nextActiveID = layers.map(l => l.id).reduce((candidate, id) => id < activeLayerID ? Math.max(candidate, id) : candidate, Number.NEGATIVE_INFINITY);
-      if (isFinite(nextActiveID)) {
-        dispatch(setActiveLayer(nextActiveID))
-      }
-      else {
-        dispatch(setActiveLayer(layers[0].id));
-      }
-    }
-  }, [selectedIndex, layers, dispatch, activeLayerID]);
-
   function handleTabClick(index: number) {
     if (index < layers.length) {
       dispatch(setActiveLayer(layers[index].id));
