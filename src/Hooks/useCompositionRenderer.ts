@@ -4,15 +4,15 @@ import { getLayerByID, isCompositeLayer } from "../util/project";
 
 export function useCompositionRenderer(
   compositeLayer: CompositeLayer,
-  project: ImageProject
+  project: ImageProject | null
 ) {
 
   return useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = project.width;
-    canvas.height = project.height;
 
-    if (compositeLayer) {
+    if (compositeLayer && project) {
+      canvas.width = compositeLayer.width;
+      canvas.height = compositeLayer.height;
       renderToCanvas(canvas, compositeLayer, project);
     }
 

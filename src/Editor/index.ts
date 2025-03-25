@@ -3,8 +3,8 @@ import { defaultUIState } from "../Store/ui/reducer";
 type Point = { x: number, y: number };
 
 export class Editor {
-    #canvas: HTMLCanvasElement | null = null;
-    #overlayCanvas: HTMLCanvasElement | null = null;
+    #targetCanvas: HTMLCanvasElement | null = null;
+    #workingCanvas: HTMLCanvasElement | null = null;
 
     #tool = "";
     #toolOptions = defaultUIState.toolOptions;
@@ -14,12 +14,18 @@ export class Editor {
 
     #currentPath: Point[] = [];
 
+    #transform = new DOMMatrix([1, 0, 0, 1, 0, 0]) as DOMMatrix2DInit;
+
     setCanvases(
-        canvas: HTMLCanvasElement | null,
-        overlayCanvas: HTMLCanvasElement | null
+        targetCanvas: HTMLCanvasElement | null,
+        workingCanvas: HTMLCanvasElement | null
     ) {
-        this.#canvas = canvas;
-        this.#overlayCanvas = overlayCanvas;
+        this.#targetCanvas = targetCanvas;
+        this.#workingCanvas = workingCanvas;
+    }
+
+    setTransform(transform: DOMMatrix2DInit) {
+        this.#transform = transform;
     }
 
     setTool(tool: string, toolOptions: typeof defaultUIState.toolOptions) {
@@ -37,49 +43,70 @@ export class Editor {
     }
 
     mouseMove(mousePos: Point, mouseEvent: MouseEvent) {
-        if (!this.#canvas || !this.#overlayCanvas) {
+        if (!this.#workingCanvas) {
             return;
         }
 
-        const ctx = this.#canvas.getContext("2d");
-        const oCtx = this.#overlayCanvas.getContext("2d");
+        const oCtx = this.#workingCanvas.getContext("2d");
 
-        if (!ctx || !oCtx) {
+        if (!oCtx) {
             return;
         }
 
         switch (this.#tool) {
             case "pencil":
-                this.#pencil(ctx, mousePos);
+                this.#pencil(oCtx, mousePos);
                 break;
             case "shapes":
-                this.#shapes(ctx, oCtx, mousePos, mouseEvent);
+                this.#shapes(oCtx, mousePos, mouseEvent);
                 break;
             case "line":
-                this.#line(ctx, oCtx, mousePos, mouseEvent);
+                this.#line(oCtx, mousePos, mouseEvent);
                 break;
         }
 
         this.#prevPoint = mousePos;
     }
 
-    mouseUp() {
-        if (!this.#canvas || !this.#overlayCanvas) {
-            return;
+    commit() {
+        let returnVal = this.#targetCanvas;
+
+        if (!this.#workingCanvas) {
+            return returnVal;
         }
 
-        if (this.#tool === "shapes" || this.#tool === "line") {
-            const ctx = this.#canvas.getContext("2d");
+        if (this.#tool === "pencil" || this.#tool === "shapes" || this.#tool === "line") {
+            // Create a new canvas for this commit
+            const newCanvas = document.createElement("canvas");
+            newCanvas.width = this.#workingCanvas.width;
+            newCanvas.height = this.#workingCanvas.height;
+
+            const ctx = newCanvas.getContext("2d");
 
             if (!ctx) {
                 return;
             }
 
-            ctx.drawImage(this.#overlayCanvas, 0, 0);
+            // For the first drawing operation the target canvas might be null
+            if (this.#targetCanvas) {
+                // copy the target canvas to the new canvas
+                ctx.drawImage(this.#targetCanvas, 0, 0);
+            }
+
+            // Apply the transformation (which should be the inverse transform if editing a composited base layer)
+            ctx.setTransform(this.#transform);
+
+            // Commit drawing from working canvas to new canvas
+            ctx.drawImage(this.#workingCanvas, 0, 0);
+
+            returnVal = newCanvas;
         }
 
-        const { width, height } = this.#overlayCanvas;
-        this.#overlayCanvas?.getContext("2d")?.clearRect(0, 0, width, height);
+        // Clear Working canvas
+        const { width, height } = this.#workingCanvas;
+        this.#workingCanvas?.getContext("2d")?.clearRect(0, 0, width, height);
+
+        return returnVal;
     }
 
     #setFillAndStroke(ctx: CanvasRenderingContext2D) {
@@ -114,7 +141,6 @@ export class Editor {
     }
 
     #shapes(
-        ctx: CanvasRenderingContext2D,
         oCtx: CanvasRenderingContext2D,
         pos: Point,
         mouseEvent: MouseEvent
@@ -208,7 +234,6 @@ export class Editor {
     }
 
     #line(
-        ctx: CanvasRenderingContext2D,
         oCtx: CanvasRenderingContext2D,
         pos: Point,
         mouseEvent: MouseEvent

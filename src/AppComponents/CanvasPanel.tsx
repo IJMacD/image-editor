@@ -1,14 +1,14 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { StoreContext, DispatchContext } from "../Store/context";
 import { editBaseLayer, editCompositeLayerInput } from "../Store/project/actions";
-import { Layer } from "../types";
+import { BaseLayer, InputProperties } from "../types";
 import { Editor } from "../Editor";
 import checkerBoard from "../assets/bg.png";
 import { isBaseLayer } from "../util/project";
 import { getInputByPath, getLayerByPath } from "../util/ui";
 import { selectIsMovable } from "../Store/ui/selectors";
 
-export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElement|null, editableLayer?: Layer }) {
+export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: HTMLCanvasElement | null, editableLayer?: BaseLayer, editableInput?: InputProperties }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
   const editorRef = useRef(new Editor)
@@ -16,7 +16,13 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
   const store = useContext(StoreContext);
   const dispatch = useContext(DispatchContext);
 
-  editorRef.current.setCanvases(canvasRef.current, overlayCanvasRef.current);
+  if (editableLayer) {
+    editorRef.current.setCanvases(editableLayer.canvas, overlayCanvasRef.current);
+  }
+  if (editableInput) {
+    const unMatrix = reverseTransform(editableInput.transform);
+    editorRef.current.setTransform(unMatrix);
+  }
 
   const { tool, inputs: { selectedPath } } = store.ui;
 
@@ -97,12 +103,12 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
         dispatch(editCompositeLayerInput(pathParent.id, pathIndex, { transform }))
       }
     }
-  }, [mouseDownPos, editableLayer, tool, isMovable, pathParent, pathIndex]);
+  }, [dispatch, mouseDownPos, editableLayer, tool, isMovable, pathParent, pathIndex]);
 
   const handleMouseUp = useCallback(() => {
-    if (mouseDownPos && editableLayer && isBaseLayer(editableLayer) && canvasRef.current) {
-      editorRef.current.mouseUp();
-      dispatch(editBaseLayer(editableLayer.id, { canvas: canvasRef.current }));
+    if (mouseDownPos && editableLayer && isBaseLayer(editableLayer)) {
+      const newCanvas = editorRef.current.commit();
+      dispatch(editBaseLayer(editableLayer.id, { canvas: newCanvas }));
     }
     setMouseDownPos(null);
   }, [mouseDownPos, editableLayer, dispatch]);
@@ -139,3 +145,9 @@ export function CanvasPanel ({ canvas, editableLayer }: { canvas: HTMLCanvasElem
     </div>
   );
 }
+
+function reverseTransform(transform: DOMMatrix2DInit) {
+  const m = DOMMatrix.fromMatrix(transform);
+  return m.inverse();
+}
+

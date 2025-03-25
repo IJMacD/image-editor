@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { ImageProject } from "../types";
 import { TabPanel } from "../Widgets/TabPanel";
 import { CanvasPanel } from "./CanvasPanel";
@@ -43,8 +43,8 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
           <div key={layer.id} className={className}>
             {
               isCompositeLayer(layer) ?
-              <CompositionPanel compositeLayer={layer} project={project} /> :
-              <CanvasPanel canvas={layer.canvas} editableLayer={layer} />
+                <CompositionPanel compositeLayer={layer} /> :
+                <CanvasPanel canvas={layer.canvas} editableLayer={layer} />
             }
           </div>
         )

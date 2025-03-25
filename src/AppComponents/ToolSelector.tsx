@@ -2,7 +2,7 @@ import { useContext } from "react"
 import { DispatchContext, StoreContext } from "../Store/context"
 import { setTool } from "../Store/ui/actions";
 import { isBaseLayer } from "../util/project";
-import { selectActiveLayer } from "../Store/selectors";
+import { selectSelectedInputLayer } from "../Store/selectors";
 import { selectIsMovable } from "../Store/ui/selectors";
 
 export function ToolSelector () {
@@ -12,7 +12,7 @@ export function ToolSelector () {
   const tool = store.ui.tool;
   const shape = store.ui.toolOptions.shape;
 
-  const isActiveLayerABaseLayer = isBaseLayer(selectActiveLayer(store))
+  const isActiveLayerABaseLayer = isBaseLayer(selectSelectedInputLayer(store))
 
   const shapeMap = {
     "circle": "🔴",

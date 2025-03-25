@@ -12,7 +12,7 @@ import { ShapeTab } from "./ShapeTab";
 import { RibbonColorPicker } from "../../Widgets/RibbonColorPicker";
 import { FillStrokeControls } from "./common";
 import { LayerTab } from "./LayerTab";
-import { selectActiveLayer, selectNearestParent } from "../../Store/selectors";
+import { selectNearestParent, selectSelectedInputLayer } from "../../Store/selectors";
 
 export function AppRibbon () {
   const store = useContext(StoreContext);
@@ -28,7 +28,7 @@ export function AppRibbon () {
   const toolStrokeAlpha = store.ui.toolOptions.strokeAlpha;
   const toolLineCap = store.ui.toolOptions.lineCap;
 
-  const isActiveLayerABaseLayer = isBaseLayer(selectActiveLayer(store))
+  const isActiveLayerABaseLayer = isBaseLayer(selectSelectedInputLayer(store))
 
   return (
     <Ribbon selectedTabID={ribbonTab} onClickTab={(id) => dispatch(setRibbonTab(id))}>
