@@ -59,9 +59,18 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     const precedingChild = pathIndex > 0 ? getLayerByPath(project, [...selectedPath.slice(0, -1), pathIndex - 1]) : undefined;
     const precedingCompositeLayerID = isCompositeLayer(precedingChild) ? precedingChild.id : undefined;
 
+    const parentParentLayer = selectedPath.length > 2 ? getLayerByPath(project, selectedPath.slice(0, -2)) : undefined;
+    const parentParentLayerID = isCompositeLayer(parentParentLayer) ? parentParentLayer.id : undefined;
+
     function handleIndent() {
         if (pathParent && typeof precedingCompositeLayerID === "number") {
             dispatch(transplantCompositeLayerInput(pathParent.id, pathIndex, precedingCompositeLayerID))
+        };
+    }
+
+    function handleUnindent() {
+        if (pathParent && typeof parentParentLayerID === "number") {
+            dispatch(transplantCompositeLayerInput(pathParent.id, pathIndex, parentParentLayerID))
         };
     }
 
@@ -93,6 +102,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                 <button onClick={() => handleMove(-1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === 0}>↑</button>
                 <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === currentChildCount - 1}>↓</button>
                 <button onClick={() => handleIndent()} className={buttonStyle} disabled={!haveSelectedPath || typeof precedingCompositeLayerID === "undefined"}>→</button>
+                <button onClick={() => handleUnindent()} className={buttonStyle} disabled={!haveSelectedPath || typeof parentParentLayerID === "undefined"}>←</button>
             </div>
             {pathLayer && <LayerPropertiesPanel layer={pathLayer} />}
             {pathInput && <InputPropertiesPanel key={getInputKey(selectedPath, pathInput)} input={pathInput} onEdit={handleInputEdit} />}
