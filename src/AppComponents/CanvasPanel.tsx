@@ -20,8 +20,7 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
     editorRef.current.setCanvases(editableLayer.canvas, overlayCanvasRef.current);
   }
   if (editableInput) {
-    const unMatrix = reverseTransform(editableInput.transform);
-    editorRef.current.setTransform(unMatrix);
+    editorRef.current.setTransform(editableInput.transform);
   }
 
   const { tool, inputs: { selectedPath } } = store.ui;
@@ -145,9 +144,3 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
     </div>
   );
 }
-
-function reverseTransform(transform: DOMMatrix2DInit) {
-  const m = DOMMatrix.fromMatrix(transform);
-  return m.inverse();
-}
-

@@ -65,6 +65,17 @@ export class Editor {
                 break;
         }
 
+        // Show indicative layer outline on working canvas
+        oCtx.save()
+        oCtx.setTransform(this.#transform);
+        oCtx.beginPath();
+        oCtx.rect(-4, -4, this.#workingCanvas.width + 8, this.#workingCanvas.height + 8);
+        oCtx.strokeStyle = "#666666";
+        oCtx.lineWidth = 1;
+        oCtx.setLineDash([4, 4]);
+        oCtx.stroke();
+        oCtx.restore();
+
         this.#prevPoint = mousePos;
     }
 
@@ -93,8 +104,9 @@ export class Editor {
                 ctx.drawImage(this.#targetCanvas, 0, 0);
             }
 
-            // Apply the transformation (which should be the inverse transform if editing a composited base layer)
-            ctx.setTransform(this.#transform);
+            // Apply the inverse transformation (which corrects the transformation if editing a composited base layer)
+            const transform = DOMMatrix.fromMatrix(this.#transform).inverse()
+            ctx.setTransform(transform);
 
             // Commit drawing from working canvas to new canvas
             ctx.drawImage(this.#workingCanvas, 0, 0);
