@@ -54,7 +54,9 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
 
     const haveSelectedPath = selectedPath.length > 1;
 
-    const buttonStyle = `rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 ${haveSelectedPath ? "hover:bg-gray-200" : "opacity-50"}`;
+    const currentChildCount = isCompositeLayer(pathParent) ? pathParent.inputs.length : 0
+
+    const buttonStyle = `rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 hover:bg-gray-200 disabled:hover:bg-gray-100 disabled:opacity-50`;
 
     return (
         <div className="bg-white flow-root">
@@ -79,8 +81,8 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
             <div>
                 <button onClick={handleRemove} className={buttonStyle} disabled={!haveSelectedPath}>❎</button>
                 <button onClick={handleDelete} className={buttonStyle} disabled={!haveSelectedPath}>🗑️</button>
-                <button onClick={() => handleMove(-1)} className={buttonStyle} disabled={!haveSelectedPath}>↑</button>
-                <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath}>↓</button>
+                <button onClick={() => handleMove(-1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === 0}>↑</button>
+                <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === currentChildCount - 1}>↓</button>
             </div>
             {pathLayer && <LayerPropertiesPanel layer={pathLayer} />}
             {pathInput && <InputPropertiesPanel key={getInputKey(selectedPath, pathInput)} input={pathInput} onEdit={handleInputEdit} />}

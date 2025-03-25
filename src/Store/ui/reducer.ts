@@ -22,7 +22,7 @@ export const defaultUIState: UIState = {
         activeLayerID: 1,
     },
     inputs: {
-        selectedPath: [0],
+        selectedPath: [0, 0],
     },
 };
 

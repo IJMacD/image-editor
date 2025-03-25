@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
 import { Layer } from "../types";
@@ -12,7 +12,14 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
 
     const nonRootLayers = project?.layers.filter(l => !project.compositions.includes(l.id) && l.id !== layer.id) || [];
 
-    const [selectedInsertLayer, setSelectedInsertLayer] = useState(nonRootLayers[0]?.id);
+    const firstNonRootLayerID = nonRootLayers[0]?.id;
+    const [selectedInsertLayer, setSelectedInsertLayer] = useState(firstNonRootLayerID);
+
+    useEffect(() => {
+        if (typeof selectedInsertLayer === "undefined" && typeof firstNonRootLayerID === "number") {
+            setSelectedInsertLayer(firstNonRootLayerID);
+        }
+    }, [selectedInsertLayer, firstNonRootLayerID])
 
     function handleRename() {
         const name = prompt("Enter name", layer.name);
