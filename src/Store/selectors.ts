@@ -1,4 +1,5 @@
 import { getCompositeLayerByID, getLayerByID, isCompositeLayer } from "../util/project";
+import { getInputByID } from "../util/ui";
 import { AppState } from "./reducer";
 
 export function selectActiveLayer(store: AppState) {
@@ -6,6 +7,10 @@ export function selectActiveLayer(store: AppState) {
         store.project?.layers || [],
         store.ui.layers.activeLayerID
     );
+}
+
+export function selectCurrentInputLayer(store: AppState) {
+    return getInputByID(store.project, store.ui.inputs.selectedInput);
 }
 
 export function selectNearestParent(store: AppState) {

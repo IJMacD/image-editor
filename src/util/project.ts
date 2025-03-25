@@ -1,5 +1,15 @@
 import { Layer, ImageProject, CompositeLayer, BaseLayer } from "../types";
 
+let nextLayerID = 0;
+export function getLayerID() {
+    return nextLayerID++;
+}
+
+let nextInputID = 0;
+export function getInputID() {
+    return nextInputID++;
+}
+
 export function getLayerByID(layers: Layer[] = [], id: number) {
     return layers.find((l) => l.id === id);
 }

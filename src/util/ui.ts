@@ -15,23 +15,8 @@ export function pathsEqual<T>(a: T[], b: T[]): boolean {
     return true;
 }
 
-export function getInputByPath(project: ImageProject | null, path: number[]) {
-    if (!project) {
-        return undefined;
-    }
-
-    const ids = pathToIDs(project, path);
-
-    if (!ids) {
-        return undefined;
-    }
-
-    const parentID = ids[ids.length - 2];
-    const lastIndex = path[path.length - 1];
-
-    const layer = getCompositeLayerByID(project.layers, parentID);
-
-    return layer?.inputs[lastIndex];
+export function getInputByID(project: ImageProject | null, id: number) {
+    return project?.inputs.find((input) => input.inputID === id);
 }
 
 export function getLayerByPath(project: ImageProject | null, path: number[]) {

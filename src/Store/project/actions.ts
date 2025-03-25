@@ -1,4 +1,5 @@
 import { BaseLayer, CompositeLayer, InputProperties, Layer } from "../../types";
+import { getInputID, getLayerID } from "../../util/project";
 
 export enum ActionTypes {
     NEW_DOCUMENT = "project/newDocument",
@@ -20,6 +21,7 @@ type NewCompositionAction = { type: ActionTypes.NEW_COMPOSITION };
 type NewLayerAction = {
     type: ActionTypes.NEW_LAYER;
     payload: {
+        inputID: number;
         id: number;
         parent: number;
         isComposite: boolean;
@@ -111,17 +113,21 @@ export function newDocument(): NewDocumentAction {
     };
 }
 
-export function newBaseLayer(id: number, parent: number): NewLayerAction {
+export function newBaseLayer(parent: number): NewLayerAction {
+    const id = getLayerID();
+    const inputID = getInputID();
     return {
         type: ActionTypes.NEW_LAYER,
-        payload: { id, parent, isComposite: false },
+        payload: { id, parent, isComposite: false, inputID },
     };
 }
 
-export function newCompositeLayer(id: number, parent: number): NewLayerAction {
+export function newCompositeLayer(parent: number): NewLayerAction {
+    const id = getLayerID();
+    const inputID = getInputID();
     return {
         type: ActionTypes.NEW_LAYER,
-        payload: { id, parent, isComposite: true },
+        payload: { id, parent, isComposite: true, inputID },
     };
 }
 

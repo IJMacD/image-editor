@@ -6,6 +6,7 @@ import { CompositionPanel } from "./CompositionPanel";
 import { DispatchContext, StoreContext } from "../Store/context";
 import { setActiveLayer } from "../Store/ui/actions";
 import { isCompositeLayer } from "../util/project";
+import { selectCurrentInputLayer } from "../Store/selectors";
 
 export function LayersPanel ({ project }: { project: ImageProject}) {
   const store = useContext(StoreContext);
@@ -36,6 +37,8 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
     }
   }
 
+  const input = selectCurrentInputLayer(store);
+
   return (
     <TabPanel labels={layerLabels} selectedIndex={activeCompositionIndex < 0 ? selectedIndex : activeCompositionIndex + layers.length} onClickTab={handleTabClick}>
       {
@@ -43,7 +46,7 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
           <div key={layer.id} className={className}>
             {
               isCompositeLayer(layer) ?
-              <CompositionPanel compositeLayer={layer} project={project} /> :
+              <CompositionPanel compositeLayer={layer} project={project} input={input} /> :
               <CanvasPanel canvas={layer.canvas} editableLayer={layer} />
             }
           </div>

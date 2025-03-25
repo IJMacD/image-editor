@@ -1,6 +1,8 @@
 import { Editor } from "../../Editor";
-import { ImageProject } from "../../types";
+import { ImageProject, Quad } from "../../types";
 import {
+    getInputID,
+    getLayerID,
     getNextLayerID,
     isBaseLayer,
     isCompositeLayer,
@@ -12,34 +14,45 @@ type ProjectState = ImageProject | null;
 
 const width = 512;
 const height = 512;
+const defaultProjectLayer0ID = getLayerID();
+const defaultProjectLayer1ID = getLayerID();
+const defaultProjectInputID = getInputID();
 
 export const defaultProjectState: ImageProject = {
     layers: [
         {
-            id: 0,
+            id: defaultProjectLayer0ID,
             name: "Image",
             width,
             height,
-            inputs: [
-                {
-                    id: 1,
-                    enabled: true,
-                    transform: new DOMMatrix([1, 0, 0, 1, 0, 0]),
-                    operation: "source-over" as GlobalCompositeOperation,
-                    filter: "",
-                    parameters: {},
-                },
-            ],
+            inputs: [defaultProjectInputID],
         },
         {
-            id: 1,
+            id: defaultProjectLayer1ID,
             name: "Layer 1",
             width,
             height,
             canvas: null,
         },
     ],
-    compositions: [0],
+    inputs: [
+        {
+            inputID: defaultProjectInputID,
+            id: defaultProjectLayer1ID,
+            enabled: true,
+            transform: new DOMMatrix([1, 0, 0, 1, 0, 0]),
+            operation: "source-over" as GlobalCompositeOperation,
+            filter: "",
+            parameters: {},
+            nonLinear: [
+                [0, 0],
+                [width, 0],
+                [width, height],
+                [0, height],
+            ],
+        },
+    ],
+    compositions: [defaultProjectLayer0ID],
     width,
     height,
 };
@@ -58,7 +71,8 @@ export function projectReducer(
             if (state) {
                 const { width, height } = state;
 
-                const { id, isComposite, parent, ...rest } = action.payload;
+                const { id, inputID, isComposite, parent, ...rest } =
+                    action.payload;
 
                 const newLayer = isComposite
                     ? {
@@ -85,24 +99,30 @@ export function projectReducer(
                             l.id === parent && "inputs" in l
                                 ? {
                                       ...l,
-                                      inputs: [
-                                          ...l.inputs,
-                                          {
-                                              id,
-                                              enabled: true,
-                                              transform: new DOMMatrix([
-                                                  1, 0, 0, 1, 0, 0,
-                                              ]),
-                                              operation:
-                                                  "source-over" as GlobalCompositeOperation,
-                                              filter: "",
-                                              parameters: {},
-                                          },
-                                      ],
+                                      inputs: [...l.inputs, inputID],
                                   }
                                 : l
                         ),
                         newLayer,
+                    ],
+                    inputs: [
+                        ...state.inputs,
+                        {
+                            inputID,
+                            id,
+                            enabled: true,
+                            transform: new DOMMatrix([1, 0, 0, 1, 0, 0]),
+                            operation:
+                                "source-over" as GlobalCompositeOperation,
+                            filter: "",
+                            parameters: {},
+                            nonLinear: [
+                                [0, 0],
+                                [width, 0],
+                                [width, height],
+                                [0, height],
+                            ] as Quad,
+                        },
                     ],
                 };
             }
@@ -162,20 +182,13 @@ export function projectReducer(
             return (
                 state && {
                     ...state,
-                    layers: state.layers.map((l) =>
-                        l.id === action.payload.id && isCompositeLayer(l)
+                    inputs: state.inputs.map((input) =>
+                        input.id === action.payload.id
                             ? {
-                                  ...l,
-                                  inputs: l.inputs.map((input, i) =>
-                                      i === action.payload.index
-                                          ? {
-                                                ...input,
-                                                ...action.payload.properties,
-                                            }
-                                          : input
-                                  ),
+                                  ...input,
+                                  ...action.payload.properties,
                               }
-                            : l
+                            : input
                     ),
                 }
             );
@@ -205,6 +218,12 @@ export function projectReducer(
                                           operation: "source-over",
                                           filter: "",
                                           parameters: {},
+                                          nonLinear: [
+                                              [0, 0],
+                                              [width, 0],
+                                              [width, height],
+                                              [0, height],
+                                          ],
                                       },
                                   ],
                               }
@@ -275,6 +294,10 @@ export function projectReducer(
         }
 
         case ActionTypes.DELETE_LAYER:
+            const affectedInputs =
+                state?.inputs
+                    .filter((input) => input.id === action.payload.id)
+                    .map((input) => input.inputID) || [];
             return (
                 state && {
                     ...state,
@@ -282,14 +305,14 @@ export function projectReducer(
                         .filter((l) => l.id !== action.payload.id)
                         .map((l) =>
                             "inputs" in l &&
-                            l.inputs.some(
-                                (input) => input.id === action.payload.id
+                            l.inputs.some((input) =>
+                                affectedInputs.includes(input)
                             )
                                 ? {
                                       ...l,
                                       inputs: l.inputs.filter(
                                           (input) =>
-                                              input.id !== action.payload.id
+                                              !affectedInputs.includes(input)
                                       ),
                                   }
                                 : l

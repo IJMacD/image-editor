@@ -1,9 +1,12 @@
 export interface ImageProject {
     layers: Layer[];
+    inputs: InputProperties[];
     width: number;
     height: number;
     compositions: number[];
 }
+
+type Point = [number, number];
 
 export type Layer = BaseLayer | CompositeLayer;
 
@@ -15,13 +18,17 @@ export interface BaseLayer {
     canvas: HTMLCanvasElement | null;
 }
 
+export type Quad = [Point, Point, Point, Point];
+
 export interface InputProperties {
+    inputID: number;
     id: number;
     enabled: boolean;
     transform: DOMMatrix2DInit;
     operation: GlobalCompositeOperation;
     filter: string;
     parameters: object;
+    nonLinear: Quad;
 }
 
 export interface CompositeLayer {
@@ -29,9 +36,8 @@ export interface CompositeLayer {
     name: string;
     width: number;
     height: number;
-    inputs: InputProperties[];
+    inputs: number[];
 }
-
 
 export interface ToolOptions {
     color: string;
@@ -54,6 +60,6 @@ export type UIState = {
         activeLayerID: number;
     };
     inputs: {
-        selectedPath: number[];
+        selectedInput: number;
     };
 };
