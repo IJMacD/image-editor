@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { CompositeLayer, ImageProject, InputProperties } from "../types";
 import { getLayerByID, isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
-import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, removeCompositeLayerInput } from "../Store/project/actions";
+import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, removeCompositeLayerInput, transplantCompositeLayerInput } from "../Store/project/actions";
 import { LayerPropertiesPanel } from "./LayerPropertiesPanel";
 import { InputPropertiesPanel } from "./InputPropertiesPanel";
 import { setActiveLayer, setSelectedInputPath } from "../Store/ui/actions";
@@ -56,6 +56,15 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
 
     const currentChildCount = isCompositeLayer(pathParent) ? pathParent.inputs.length : 0
 
+    const precedingChild = pathIndex > 0 ? getLayerByPath(project, [...selectedPath.slice(0, -1), pathIndex - 1]) : undefined;
+    const precedingCompositeLayerID = isCompositeLayer(precedingChild) ? precedingChild.id : undefined;
+
+    function handleIndent() {
+        if (pathParent && typeof precedingCompositeLayerID === "number") {
+            dispatch(transplantCompositeLayerInput(pathParent.id, pathIndex, precedingCompositeLayerID))
+        };
+    }
+
     const buttonStyle = `rounded-sm m-1 px-2 bg-gray-100 border-1 border-gray-400 hover:bg-gray-200 disabled:hover:bg-gray-100 disabled:opacity-50`;
 
     return (
@@ -83,6 +92,7 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                 <button onClick={handleDelete} className={buttonStyle} disabled={!haveSelectedPath}>🗑️</button>
                 <button onClick={() => handleMove(-1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === 0}>↑</button>
                 <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === currentChildCount - 1}>↓</button>
+                <button onClick={() => handleIndent()} className={buttonStyle} disabled={!haveSelectedPath || typeof precedingCompositeLayerID === "undefined"}>→</button>
             </div>
             {pathLayer && <LayerPropertiesPanel layer={pathLayer} />}
             {pathInput && <InputPropertiesPanel key={getInputKey(selectedPath, pathInput)} input={pathInput} onEdit={handleInputEdit} />}

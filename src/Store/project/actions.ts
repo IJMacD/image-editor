@@ -11,6 +11,7 @@ export enum ActionTypes {
     APPEND_COMPOSITE_LAYER_INPUT = "project/appendCompositeLayerInput",
     REMOVE_COMPOSITE_LAYER_INPUT = "project/removeCompositeLayerInput",
     MOVE_COMPOSITE_LAYER_INPUT = "project/moveCompositeLayerInput",
+    TRANSPLANT_COMPOSITE_LAYER_INPUT = "project/transplantCompositeLayerInput",
     NEW_COMPOSITION = "project/newComposition",
     APPLY_LAYER_FILTER = "project/applyLayerFilter",
 }
@@ -82,6 +83,11 @@ type MoveCompositeLayerInputAction = {
     payload: { id: number; index: number; direction: -1 | 1 };
 };
 
+type TransplantCompositeLayerInputAction = {
+    type: ActionTypes.TRANSPLANT_COMPOSITE_LAYER_INPUT;
+    payload: { id: number; index: number; newLayerID: number };
+};
+
 type DeleteLayerAction = {
     type: ActionTypes.DELETE_LAYER;
     payload: { id: number };
@@ -102,6 +108,7 @@ export type Action =
     | AppendCompositeLayerInputAction
     | RemoveCompositeLayerInputAction
     | MoveCompositeLayerInputAction
+    | TransplantCompositeLayerInputAction
     | DeleteLayerAction
     | ApplyLayerFilterAction;
 
@@ -200,6 +207,13 @@ export function moveCompositeLayerInput(
         type: ActionTypes.MOVE_COMPOSITE_LAYER_INPUT,
         payload: { id, index, direction },
     };
+}
+
+export function transplantCompositeLayerInput(id: number, index: number, newLayerID: number): TransplantCompositeLayerInputAction {
+    return {
+        type: ActionTypes.TRANSPLANT_COMPOSITE_LAYER_INPUT,
+        payload: { id, index, newLayerID, }
+    }
 }
 
 export function deleteLayer(id: number): DeleteLayerAction {

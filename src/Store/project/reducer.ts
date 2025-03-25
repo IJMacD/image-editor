@@ -274,6 +274,28 @@ export function projectReducer(
             );
         }
 
+        case ActionTypes.TRANSPLANT_COMPOSITE_LAYER_INPUT: {
+            const oldParentLayer = state?.layers.find(l => l.id === action.payload.id);
+            const input = isCompositeLayer(oldParentLayer) ? oldParentLayer.inputs[action.payload.index] : undefined;
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map(layer => {
+                        if (layer.id === action.payload.id && isCompositeLayer(layer)) {
+                            const newInputs = [...layer.inputs.slice(0, action.payload.index), ...layer.inputs.slice(action.payload.index + 1)]
+                            return { ...layer, inputs: newInputs }
+                        }
+                        else if (layer.id === action.payload.newLayerID && isCompositeLayer(layer) && input) {
+                            return { ...layer, inputs: [...layer.inputs, input] }
+                        }
+                        else {
+                            return layer;
+                        }
+                    })
+                }
+            )
+        }
+
         case ActionTypes.DELETE_LAYER:
             return (
                 state && {
