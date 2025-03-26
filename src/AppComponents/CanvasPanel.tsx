@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { StoreContext, DispatchContext } from "../Store/context";
-import { editBaseLayer, editCompositeLayerInput } from "../Store/project/actions";
+import { editCompositeLayerInput, updateCanvas } from "../Store/project/actions";
 import { BaseLayer, InputProperties } from "../types";
 import { Editor } from "../Editor";
 import checkerBoard from "../assets/bg.png";
@@ -107,7 +107,9 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
   const handleMouseUp = useCallback(() => {
     if (mouseDownPos && editableLayer && isBaseLayer(editableLayer)) {
       const newCanvas = editorRef.current.commit();
-      dispatch(editBaseLayer(editableLayer.id, { canvas: newCanvas }));
+      if (newCanvas) {
+        dispatch(updateCanvas(editableLayer.id, newCanvas));
+      }
     }
     setMouseDownPos(null);
   }, [mouseDownPos, editableLayer, dispatch]);
@@ -131,7 +133,10 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
     <div
       className="m-4 relative border-1 inline-block"
       onMouseDown={handleMouseDown}
-      style={{backgroundImage: `url(${checkerBoard})`}}
+      style={{
+        backgroundImage: `url(${checkerBoard})`,
+        cursor: tool === "move" ? "move" : undefined,
+      }}
     >
       <canvas
         ref={canvasRef}
@@ -139,7 +144,9 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
       <canvas
         ref={overlayCanvasRef}
         className="absolute inset-0"
-        style={{display: mouseDownPos ? undefined : "none"}}
+        style={{
+          display: mouseDownPos ? undefined : "none",
+        }}
       />
     </div>
   );

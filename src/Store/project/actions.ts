@@ -4,6 +4,7 @@ export enum ActionTypes {
     NEW_DOCUMENT = "project/newDocument",
     NEW_LAYER = "project/newLayer",
     EDIT_LAYER = "project/editLayer",
+    UPDATE_CANVAS = "project/updateCanvas",
     DELETE_LAYER = "project/deleteLayer",
     NEW_COMPOSITE_LAYER = "project/newCompositeLayer",
     EDIT_COMPOSITE_LAYER = "project/editCompositeLayer",
@@ -14,10 +15,12 @@ export enum ActionTypes {
     TRANSPLANT_COMPOSITE_LAYER_INPUT = "project/transplantCompositeLayerInput",
     NEW_COMPOSITION = "project/newComposition",
     APPLY_LAYER_FILTER = "project/applyLayerFilter",
+    RESTORE_CANVAS_HISTORY = "project/restoreCanvasHistory",
 }
 
 type NewDocumentAction = { type: ActionTypes.NEW_DOCUMENT };
 type NewCompositionAction = { type: ActionTypes.NEW_COMPOSITION };
+
 type NewLayerAction = {
     type: ActionTypes.NEW_LAYER;
     payload: {
@@ -29,6 +32,7 @@ type NewLayerAction = {
         height?: number;
     };
 };
+
 type EditLayerAction = {
     type: ActionTypes.EDIT_LAYER;
     payload: {
@@ -36,11 +40,28 @@ type EditLayerAction = {
         properties: Partial<Omit<Layer, "id">>;
     };
 };
+
 type EditBaseLayerAction = {
     type: ActionTypes.EDIT_LAYER;
     payload: {
         id: number;
         properties: Partial<Omit<BaseLayer, "id">>;
+    };
+};
+
+type UpdateCanvasAction = {
+    type: ActionTypes.UPDATE_CANVAS;
+    payload: {
+        id: number;
+        canvas: HTMLCanvasElement;
+    };
+};
+
+type RestoreCanvasHistoryAction = {
+    type: ActionTypes.RESTORE_CANVAS_HISTORY;
+    payload: {
+        id: number;
+        index: number;
     };
 };
 
@@ -103,6 +124,8 @@ export type Action =
     | NewCompositionAction
     | NewLayerAction
     | EditBaseLayerAction
+    | UpdateCanvasAction
+    | RestoreCanvasHistoryAction
     | EditCompositeLayerAction
     | EditCompositeLayerInputAction
     | AppendCompositeLayerInputAction
@@ -150,6 +173,39 @@ export function editBaseLayer(
         type: ActionTypes.EDIT_LAYER,
         payload: { id, properties },
     };
+}
+
+export function updateCanvas(
+    id: number,
+    canvas: HTMLCanvasElement
+): UpdateCanvasAction {
+    return {
+        type: ActionTypes.UPDATE_CANVAS,
+        payload: { id, canvas },
+    };
+}
+
+export function restoreCanvasHistory(
+    id: number,
+    index: number
+): RestoreCanvasHistoryAction {
+    return {
+        type: ActionTypes.RESTORE_CANVAS_HISTORY,
+        payload: { id, index },
+    };
+}
+
+export function undoCanvasUpdate(layer: BaseLayer) {
+    const index = Math.min(
+        layer.history.index + 1,
+        layer.history.canvases.length
+    );
+    return restoreCanvasHistory(layer.id, index);
+}
+
+export function redoCanvasUpdate(layer: BaseLayer) {
+    const index = Math.max(layer.history.index - 1, 0);
+    return restoreCanvasHistory(layer.id, index);
 }
 
 export function newComposition(): NewCompositionAction {

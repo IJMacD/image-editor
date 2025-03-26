@@ -13,10 +13,15 @@ import {
     editCompositeLayerInput,
     newBaseLayer,
     newCompositeLayer,
+    redoCanvasUpdate,
+    undoCanvasUpdate,
 } from "../Store/project/actions";
 import { AppState } from "../Store/reducer";
-import { getNextLayerID } from "../util/project";
-import { selectNearestParent } from "../Store/selectors";
+import { getNextLayerID, isBaseLayer } from "../util/project";
+import {
+    selectNearestParent,
+    selectSelectedInputLayer,
+} from "../Store/selectors";
 import { selectIsMovable } from "../Store/ui/selectors";
 import { getInputByPath, getPathParentAndIndex } from "../util/ui";
 
@@ -49,6 +54,24 @@ export function useKeyboardShortcuts(
                         }
                         e.preventDefault();
                         return;
+                    case "z": {
+                        const selectedLayer = selectSelectedInputLayer(store);
+                        if (isBaseLayer(selectedLayer)) {
+                            if (e.shiftKey) {
+                                dispatch(redoCanvasUpdate(selectedLayer));
+                            } else {
+                                dispatch(undoCanvasUpdate(selectedLayer));
+                            }
+                        }
+                        return;
+                    }
+                    case "y": {
+                        const selectedLayer = selectSelectedInputLayer(store);
+                        if (isBaseLayer(selectedLayer)) {
+                            dispatch(redoCanvasUpdate(selectedLayer));
+                        }
+                        return;
+                    }
                 }
             }
 

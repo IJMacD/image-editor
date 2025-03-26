@@ -18,6 +18,11 @@ export function selectSelectedInputLayer(store: AppState) {
     return input ? getLayerByID(store.project?.layers, input.id) : undefined;
 }
 
+export function selectSelectedInputLayerID(store: AppState) {
+    const input = getInputByPath(store.project, store.ui.inputs.selectedPath);
+    return input ? input.id : undefined;
+}
+
 export function selectNearestParent(store: AppState) {
     const { activeLayerID } = store.ui.layers;
 

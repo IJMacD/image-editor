@@ -11,6 +11,7 @@ import { useKeyboardShortcuts } from '../Hooks/useKeyboardShortcuts'
 import { UIState } from '../types'
 import { useSavedState } from '../Hooks/useSavedState'
 import { useThrottle } from '../Hooks/useThrottle'
+import { HistoryExplorer } from './HistoryExplorer'
 
 function App() {
   const [savedUIState, saveUIState] = useSavedState("image-editor.uiState", {} as Partial<UIState>);
@@ -35,8 +36,11 @@ function App() {
           <div className='bg-blue-100 flex-2 overflow-hidden'>
             { store.project && <LayersPanel project={store.project} /> }
           </div>
-          <div className='bg-teal-100 flex-1'>
+          <div className='bg-teal-100 flex-1 flex flex-col h-full'>
             { store.project && <CompositionTreePanel project={store.project} /> }
+            { store.project && store.ui.inputs.selectedPath.length > 1 &&
+              <HistoryExplorer />
+            }
           </div>
         </Panel>
       </DispatchContext.Provider>

@@ -5,7 +5,7 @@ export function Panel ({ row = false, column = false, children = null }: { row?:
   }
 
   return (
-    <div className={`flex-1 flex ${row ? "flex-row" : "flex-col"}`}>
+    <div className={`flex-1 flex ${row ? "flex-row" : "flex-col"} h-full overflow-hidden`}>
       { children }
     </div>
   )

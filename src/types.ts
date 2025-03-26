@@ -13,6 +13,10 @@ export interface BaseLayer {
     width: number;
     height: number;
     canvas: HTMLCanvasElement | null;
+    history: {
+        canvases: HTMLCanvasElement[];
+        index: number;
+    };
 }
 
 export interface InputProperties {

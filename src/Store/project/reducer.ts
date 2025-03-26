@@ -37,6 +37,10 @@ export const defaultProjectState: ImageProject = {
             width,
             height,
             canvas: null,
+            history: {
+                canvases: [],
+                index: 0,
+            },
         },
     ],
     compositions: [0],
@@ -75,6 +79,10 @@ export function projectReducer(
                           width,
                           height,
                           canvas: null,
+                          history: {
+                              canvases: [],
+                              index: -1,
+                          },
                           ...rest,
                       };
 
@@ -144,6 +152,52 @@ export function projectReducer(
                     ),
                 }
             );
+
+        case ActionTypes.UPDATE_CANVAS:
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map((l) =>
+                        l.id === action.payload.id && isBaseLayer(l)
+                            ? {
+                                  ...l,
+                                  canvas: action.payload.canvas,
+                                  history: {
+                                      canvases: [
+                                          action.payload.canvas,
+                                          ...l.history.canvases.slice(
+                                              l.history.index
+                                          ),
+                                      ],
+                                      index: 0,
+                                  },
+                              }
+                            : l
+                    ),
+                }
+            );
+
+        case ActionTypes.RESTORE_CANVAS_HISTORY:
+            return (
+                state && {
+                    ...state,
+                    layers: state.layers.map((l) =>
+                        l.id == action.payload.id && isBaseLayer(l)
+                            ? {
+                                  ...l,
+                                  canvas: l.history.canvases[
+                                      action.payload.index
+                                  ],
+                                  history: {
+                                      ...l.history,
+                                      index: action.payload.index,
+                                  },
+                              }
+                            : l
+                    ),
+                }
+            );
+
         case ActionTypes.EDIT_COMPOSITE_LAYER:
             return (
                 state && {
@@ -275,25 +329,40 @@ export function projectReducer(
         }
 
         case ActionTypes.TRANSPLANT_COMPOSITE_LAYER_INPUT: {
-            const oldParentLayer = state?.layers.find(l => l.id === action.payload.id);
-            const input = isCompositeLayer(oldParentLayer) ? oldParentLayer.inputs[action.payload.index] : undefined;
+            const oldParentLayer = state?.layers.find(
+                (l) => l.id === action.payload.id
+            );
+            const input = isCompositeLayer(oldParentLayer)
+                ? oldParentLayer.inputs[action.payload.index]
+                : undefined;
             return (
                 state && {
                     ...state,
-                    layers: state.layers.map(layer => {
-                        if (layer.id === action.payload.id && isCompositeLayer(layer)) {
-                            const newInputs = [...layer.inputs.slice(0, action.payload.index), ...layer.inputs.slice(action.payload.index + 1)]
-                            return { ...layer, inputs: newInputs }
-                        }
-                        else if (layer.id === action.payload.newLayerID && isCompositeLayer(layer) && input) {
-                            return { ...layer, inputs: [...layer.inputs, input] }
-                        }
-                        else {
+                    layers: state.layers.map((layer) => {
+                        if (
+                            layer.id === action.payload.id &&
+                            isCompositeLayer(layer)
+                        ) {
+                            const newInputs = [
+                                ...layer.inputs.slice(0, action.payload.index),
+                                ...layer.inputs.slice(action.payload.index + 1),
+                            ];
+                            return { ...layer, inputs: newInputs };
+                        } else if (
+                            layer.id === action.payload.newLayerID &&
+                            isCompositeLayer(layer) &&
+                            input
+                        ) {
+                            return {
+                                ...layer,
+                                inputs: [...layer.inputs, input],
+                            };
+                        } else {
                             return layer;
                         }
-                    })
+                    }),
                 }
-            )
+            );
         }
 
         case ActionTypes.DELETE_LAYER:

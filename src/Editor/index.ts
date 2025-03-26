@@ -95,7 +95,7 @@ export class Editor {
             const ctx = newCanvas.getContext("2d");
 
             if (!ctx) {
-                return;
+                return returnVal;
             }
 
             // For the first drawing operation the target canvas might be null
