@@ -63,14 +63,22 @@ export class Editor {
             case "line":
                 this.#line(oCtx, mousePos, mouseEvent);
                 break;
+            case "move":
+                oCtx.clearRect(0, 0, oCtx.canvas.width, oCtx.canvas.height);
+                break;
         }
 
         // Show indicative layer outline on working canvas
-        oCtx.save()
+        oCtx.save();
         oCtx.setTransform(this.#transform);
         oCtx.beginPath();
-        oCtx.rect(-4, -4, this.#workingCanvas.width + 8, this.#workingCanvas.height + 8);
-        oCtx.strokeStyle = "#666666";
+        oCtx.rect(
+            -4,
+            -4,
+            this.#workingCanvas.width + 8,
+            this.#workingCanvas.height + 8
+        );
+        oCtx.strokeStyle = "#000";
         oCtx.lineWidth = 1;
         oCtx.setLineDash([4, 4]);
         oCtx.stroke();

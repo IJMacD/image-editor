@@ -37,8 +37,18 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
     editorRef.current.setTool(tool, toolOptions);
   }, [store.ui]);
 
+  const width = editableLayer?.width || canvas?.width || 512;
+  const height = editableLayer?.height || canvas?.height || 512;
+
   useEffect(() => {
-    if (!canvasRef.current || !overlayCanvasRef.current || canvasRef.current === canvas) {
+    if (overlayCanvasRef.current) {
+      overlayCanvasRef.current.width = width;
+      overlayCanvasRef.current.height = height;
+    }
+  }, [width, height]);
+
+  useEffect(() => {
+    if (!canvasRef.current || canvasRef.current === canvas) {
       return;
     }
 
@@ -48,22 +58,13 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
       return;
     }
 
-    if (editableLayer) {
-      canvasRef.current.width = editableLayer.width;
-      canvasRef.current.height = editableLayer.height;
-    }
-    else if (canvas) {
-      canvasRef.current.width = canvas.width;
-      canvasRef.current.height = canvas.height;
-    }
-
-    overlayCanvasRef.current.width = canvasRef.current.width;
-    overlayCanvasRef.current.height = canvasRef.current.height;
+    canvasRef.current.width = width;
+    canvasRef.current.height = height;
 
     if (canvas) {
       ctx.drawImage(canvas, 0, 0);
     }
-  }, [canvas, editableLayer]);
+  }, [canvas, width, height]);
 
   function handleMouseDown(e: React.MouseEvent<HTMLElement>) {
     if (canvasRef.current) {

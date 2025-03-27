@@ -163,12 +163,15 @@ export function projectReducer(
                                   ...l,
                                   canvas: action.payload.canvas,
                                   history: {
-                                      canvases: [
-                                          action.payload.canvas,
-                                          ...l.history.canvases.slice(
-                                              l.history.index
-                                          ),
-                                      ],
+                                      canvases:
+                                          l.canvas === action.payload.canvas
+                                              ? l.history.canvases
+                                              : [
+                                                    action.payload.canvas,
+                                                    ...l.history.canvases.slice(
+                                                        l.history.index
+                                                    ),
+                                                ],
                                       index: 0,
                                   },
                               }
