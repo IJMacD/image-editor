@@ -54,14 +54,39 @@ export class Editor {
         this.#firstPoint = mousePos;
         this.#prevPoint = mousePos;
 
+        const oCtx = this.#workingCanvas?.getContext("2d");
+        if (oCtx) {
+            // Show indicative layer outline on working canvas
+            oCtx.save();
+            oCtx.setTransform(this.#transform);
+            oCtx.beginPath();
+            oCtx.rect(
+                -4,
+                -4,
+                oCtx.canvas.width + 8,
+                oCtx.canvas.height + 8
+            );
+            oCtx.strokeStyle = "#000";
+            oCtx.lineWidth = 1;
+            oCtx.setLineDash([4, 4]);
+            oCtx.stroke();
+            oCtx.restore();
+        }
+
         if (this.#tool === "line") {
             this.#currentPath = [mousePos];
         } else if (this.#tool === "pencil") {
-            const oCtx = this.#workingCanvas?.getContext("2d");
-            oCtx && this.#pencil(oCtx, mousePos);
+            if (oCtx) {
+                this.#preDraw(oCtx);
+                this.#pencil(oCtx, mousePos);
+                this.#postDraw(oCtx);
+            }
         } else if (this.#tool === "eraser") {
-            const oCtx = this.#workingCanvas?.getContext("2d");
-            oCtx && this.#eraser(oCtx, mousePos);
+            if (oCtx) {
+                this.#preDraw(oCtx);
+                this.#eraser(oCtx, mousePos);
+                this.#postDraw(oCtx);
+            }
         }
     }
 
@@ -75,6 +100,8 @@ export class Editor {
         if (!oCtx) {
             return;
         }
+
+        this.#preDraw(oCtx);
 
         switch (this.#tool) {
             case "pencil":
@@ -94,21 +121,7 @@ export class Editor {
                 break;
         }
 
-        // Show indicative layer outline on working canvas
-        oCtx.save();
-        oCtx.setTransform(this.#transform);
-        oCtx.beginPath();
-        oCtx.rect(
-            -4,
-            -4,
-            this.#workingCanvas.width + 8,
-            this.#workingCanvas.height + 8
-        );
-        oCtx.strokeStyle = "#000";
-        oCtx.lineWidth = 1;
-        oCtx.setLineDash([4, 4]);
-        oCtx.stroke();
-        oCtx.restore();
+        this.#postDraw(oCtx);
 
         this.#prevPoint = mousePos;
     }
@@ -183,6 +196,21 @@ export class Editor {
                 .padStart(2, "0");
     }
 
+    #preDraw (ctx: CanvasRenderingContext2D) {
+        // Set clipping region of overlay canvas to represent transformed canvas
+        ctx.save();
+        ctx.setTransform(this.#transform);
+        ctx.beginPath();
+        ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.clip();
+        ctx.resetTransform();
+    }
+
+    #postDraw (ctx: CanvasRenderingContext2D) {
+        // Restore clipping region
+        ctx.restore();
+    }
+
     #pencil(ctx: CanvasRenderingContext2D, pos: Point) {
         const toolSize = this.#toolOptions.size;
         const { x: prevX, y: prevY } = this.#prevPoint;
@@ -212,6 +240,7 @@ export class Editor {
         );
 
         if (pattern) {
+            pattern.setTransform(this.#transform);
             ctx.strokeStyle = pattern;
         } else {
             ctx.strokeStyle = "white";
