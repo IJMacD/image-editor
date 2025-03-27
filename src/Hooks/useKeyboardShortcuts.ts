@@ -103,6 +103,9 @@ export function useKeyboardShortcuts(
                 case "l":
                     dispatch(setTool("line"));
                     break;
+                case "e":
+                    dispatch(setTool("eraser"));
+                    break;
                 case "f":
                     dispatch(setTool("fill"));
                     break;

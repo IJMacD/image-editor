@@ -25,6 +25,7 @@ export function ToolSelector () {
     "pencil": "✏️",
     "shapes": shapeMap[shape],
     "line": "📈",
+    "eraser": <span className="block" style={{transform:"rotate(180deg)"}}>✏️</span>,
     "fill": <span className="block" style={{transform:"rotate(45deg)"}}>🪣</span>,
   }
 

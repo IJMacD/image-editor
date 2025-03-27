@@ -1,6 +1,6 @@
 import { defaultUIState } from "../Store/ui/reducer";
 
-type Point = { x: number, y: number };
+type Point = { x: number; y: number };
 
 export class Editor {
     #targetCanvas: HTMLCanvasElement | null = null;
@@ -15,6 +15,23 @@ export class Editor {
     #currentPath: Point[] = [];
 
     #transform = new DOMMatrix([1, 0, 0, 1, 0, 0]) as DOMMatrix2DInit;
+
+    #transparentPatternCanvas;
+
+    constructor() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+            ctx.fillStyle = "#D3D3D3";
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = "#A8A8A8";
+            ctx.fillRect(0, 0, 8, 8);
+            ctx.fillRect(8, 8, 8, 8);
+        }
+        this.#transparentPatternCanvas = canvas;
+    }
 
     setCanvases(
         targetCanvas: HTMLCanvasElement | null,
@@ -39,6 +56,12 @@ export class Editor {
 
         if (this.#tool === "line") {
             this.#currentPath = [mousePos];
+        } else if (this.#tool === "pencil") {
+            const oCtx = this.#workingCanvas?.getContext("2d");
+            oCtx && this.#pencil(oCtx, mousePos);
+        } else if (this.#tool === "eraser") {
+            const oCtx = this.#workingCanvas?.getContext("2d");
+            oCtx && this.#eraser(oCtx, mousePos);
         }
     }
 
@@ -65,6 +88,9 @@ export class Editor {
                 break;
             case "move":
                 oCtx.clearRect(0, 0, oCtx.canvas.width, oCtx.canvas.height);
+                break;
+            case "eraser":
+                this.#eraser(oCtx, mousePos);
                 break;
         }
 
@@ -94,7 +120,12 @@ export class Editor {
             return returnVal;
         }
 
-        if (this.#tool === "pencil" || this.#tool === "shapes" || this.#tool === "line") {
+        if (
+            this.#tool === "pencil" ||
+            this.#tool === "shapes" ||
+            this.#tool === "line" ||
+            this.#tool === "eraser"
+        ) {
             // Create a new canvas for this commit
             const newCanvas = document.createElement("canvas");
             newCanvas.width = this.#workingCanvas.width;
@@ -113,8 +144,15 @@ export class Editor {
             }
 
             // Apply the inverse transformation (which corrects the transformation if editing a composited base layer)
-            const transform = DOMMatrix.fromMatrix(this.#transform).inverse()
+            const transform = DOMMatrix.fromMatrix(this.#transform).inverse();
             ctx.setTransform(transform);
+
+            if (this.#tool === "eraser") {
+                if (this.#toolOptions.feather) {
+                    ctx.filter = `blur(${this.#toolOptions.feather}px)`;
+                }
+                ctx.globalCompositeOperation = "destination-out";
+            }
 
             // Commit drawing from working canvas to new canvas
             ctx.drawImage(this.#workingCanvas, 0, 0);
@@ -154,6 +192,30 @@ export class Editor {
         ctx.lineTo(pos.x, pos.y);
 
         this.#setFillAndStroke(ctx);
+
+        ctx.lineWidth = toolSize;
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
+
+    #eraser(ctx: CanvasRenderingContext2D, pos: Point) {
+        const toolSize = this.#toolOptions.size;
+        const { x: prevX, y: prevY } = this.#prevPoint;
+
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(pos.x, pos.y);
+
+        const pattern = ctx.createPattern(
+            this.#transparentPatternCanvas,
+            "repeat"
+        );
+
+        if (pattern) {
+            ctx.strokeStyle = pattern;
+        } else {
+            ctx.strokeStyle = "white";
+        }
 
         ctx.lineWidth = toolSize;
         ctx.lineCap = "round";
@@ -253,11 +315,7 @@ export class Editor {
         }
     }
 
-    #line(
-        oCtx: CanvasRenderingContext2D,
-        pos: Point,
-        mouseEvent: MouseEvent
-    ) {
+    #line(oCtx: CanvasRenderingContext2D, pos: Point, mouseEvent: MouseEvent) {
         const { size, lineCap } = this.#toolOptions;
 
         // const isFill = ["fill", "both"].includes(this.#toolOptions.fillStroke);

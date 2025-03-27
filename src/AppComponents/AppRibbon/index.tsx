@@ -6,7 +6,7 @@ import { StoreContext, DispatchContext } from "../../Store/context";
 import { newBaseLayer, newCompositeLayer, newComposition, newDocument } from "../../Store/project/actions";
 import { RibbonTab } from "../../Widgets/RibbonTab";
 import { selectProject } from "../../Store/project/selectors";
-import { setRibbonTab, setToolOptions, setToolSize } from "../../Store/ui/actions";
+import { setRibbonTab, setToolFeather, setToolOptions, setToolSize } from "../../Store/ui/actions";
 import { getNextLayerID, isBaseLayer } from "../../util/project";
 import { ShapeTab } from "./ShapeTab";
 import { RibbonColorPicker } from "../../Widgets/RibbonColorPicker";
@@ -84,6 +84,13 @@ export function AppRibbon () {
             </RibbonTab>
           }
           {
+            store.ui.tool === "eraser" &&
+            <RibbonTab id="eraser" label="Eraser">
+              <StrokeThickness />
+              <FeatherSize />
+            </RibbonTab>
+          }
+          {
             store.ui.tool === "fill" &&
             <RibbonTab id="fill" label="Fill">
               <RibbonColorPicker label="Fill Colour" value={toolFillColor} onChange={(color, fillAlpha) => dispatch(setToolOptions({ color, fillAlpha }))} alpha={toolFillAlpha} />
@@ -103,9 +110,23 @@ function StrokeThickness() {
   const toolSize = store.ui.toolOptions.size;
 
   return (
-    <label className="text-center">
+    <label className="text-center mx-2">
       Thickness<br />
       <input type="number" className="border w-24 text-right" min={1} value={toolSize} onChange={e => dispatch(setToolSize(e.target.valueAsNumber))} />
+    </label>
+  );
+}
+
+function FeatherSize() {
+  const store = useContext(StoreContext)
+  const dispatch = useContext(DispatchContext);
+
+  const toolFeather = store.ui.toolOptions.feather;
+
+  return (
+    <label className="text-center mx-2">
+      Feather<br />
+      <input type="number" className="border w-24 text-right" min={0} value={toolFeather} onChange={e => dispatch(setToolFeather(e.target.valueAsNumber))} />
     </label>
   );
 }

@@ -12,6 +12,7 @@ export const defaultUIState: UIState = {
         strokeAlpha: 1,
         fillStroke: "fill",
         size: 1,
+        feather: 0,
         shape: "circle",
         lineCap: "butt",
     },

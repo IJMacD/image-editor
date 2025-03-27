@@ -44,6 +44,7 @@ export interface ToolOptions {
     strokeAlpha: number;
     fillStroke: "fill" | "stroke" | "both";
     size: number;
+    feather: number;
     shape: "circle" | "rectangle" | "triangle";
     lineCap: CanvasLineCap;
 }

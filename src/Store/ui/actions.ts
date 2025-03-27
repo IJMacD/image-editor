@@ -98,6 +98,13 @@ export function decreaseToolSize(change: number = 1): AdjustToolSizeAction {
     };
 }
 
+export function setToolFeather(feather: number): SetToolOptionsAction {
+    return {
+        type: ActionTypes.SET_TOOL_OPTIONS,
+        payload: { feather },
+    };
+}
+
 export function setShape(
     shape: "circle" | "rectangle" | "triangle"
 ): SetToolOptionsAction {
