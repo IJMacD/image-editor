@@ -36,8 +36,11 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
 
     return (
         <div className="p-2 border-b-1 border-b-gray-200">
-            <b>{layer.name}</b>
-            <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
+            <h2 className="font-bold text-xl">
+                {layer.name}
+                <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
+            </h2>
+            <b>Layer Properties</b>
             <p>{layer.width}×{layer.height}</p>
             {isCompositeLayer(layer) &&
                 <div className="whitespace-nowrap">

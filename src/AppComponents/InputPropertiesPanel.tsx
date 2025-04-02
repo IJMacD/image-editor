@@ -79,7 +79,8 @@ export function InputPropertiesPanel ({ input, onEdit }: { input: InputPropertie
     }
 
     return (
-        <div className="flex flex-col p-2">
+        <div className="flex flex-col p-2 border-b-1 border-b-gray-200">
+            <b>Composition Properties</b>
             <div>
                 <label className="m-1">x = <input type="number" value={input.transform.e||0} onChange={e => handleEditX(e.target.valueAsNumber)} className="w-16 border-1 rounded border-gray-300 text-right" /></label>
                 <label className="m-1">sx = <input value={sxText} onChange={e => setSxText(e.target.value)} className="w-16 border-1 rounded border-gray-300 text-right pr-2"  onKeyDown={handleScaleXKeyDown} /></label>

@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { CompositeLayer, ImageProject, InputProperties } from "../types";
-import { getLayerByID, isCompositeLayer } from "../util/project";
+import { getLayerByID, getNextLayerID, isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
-import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, removeCompositeLayerInput, transplantCompositeLayerInput } from "../Store/project/actions";
+import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, newBaseLayer, removeCompositeLayerInput, transplantCompositeLayerInput } from "../Store/project/actions";
 import { LayerPropertiesPanel } from "./LayerPropertiesPanel";
 import { InputPropertiesPanel } from "./InputPropertiesPanel";
 import { setActiveLayer, setSelectedInputPath } from "../Store/ui/actions";
 import { getInputByPath, getLayerByPath, pathsEqual } from "../util/ui";
+import { selectNearestParent } from "../Store/selectors";
 
 export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     const store = useContext(StoreContext);
@@ -20,6 +21,13 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     const pathParent = getLayerByPath(store.project, selectedPath.slice(0, -1))
 
     const pathLayer = getLayerByPath(store.project, selectedPath);
+
+    function handleAdd () {
+        const parent = selectNearestParent(store);
+        if (store.project && typeof parent === "number") {
+        dispatch(newBaseLayer(getNextLayerID(store.project), parent))
+        }
+    }
 
     function handleDelete() {
         if (pathLayer) {
@@ -97,12 +105,13 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                 }
             </ul>
             <div>
-                <button onClick={handleRemove} className={buttonStyle} disabled={!haveSelectedPath}>❎</button>
-                <button onClick={handleDelete} className={buttonStyle} disabled={!haveSelectedPath}>🗑️</button>
+                <button onClick={handleAdd} className={buttonStyle} disabled={!haveSelectedPath}>*️⃣</button>
                 <button onClick={() => handleMove(-1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === 0}>↑</button>
                 <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === currentChildCount - 1}>↓</button>
                 <button onClick={() => handleIndent()} className={buttonStyle} disabled={!haveSelectedPath || typeof precedingCompositeLayerID === "undefined"}>→</button>
                 <button onClick={() => handleUnindent()} className={buttonStyle} disabled={!haveSelectedPath || typeof parentParentLayerID === "undefined"}>←</button>
+                <button onClick={handleRemove} className={buttonStyle} disabled={!haveSelectedPath}>❎</button>
+                <button onClick={handleDelete} className={buttonStyle} disabled={!haveSelectedPath}>🗑️</button>
             </div>
             {pathLayer && <LayerPropertiesPanel layer={pathLayer} />}
             {pathInput && <InputPropertiesPanel key={getInputKey(selectedPath, pathInput)} input={pathInput} onEdit={handleInputEdit} />}
