@@ -1,22 +1,6 @@
 import { CompositeLayer, ImageProject } from "../types";
 import { getLayerByID, isCompositeLayer } from "../util/project";
 
-const builtinFilterTypes = [
-    "url",
-    "blur",
-    "brightness",
-    "contrast",
-    "drop-shadow",
-    "grayscale",
-    "hue-rotate",
-    "invert",
-    "opacity",
-    "saturate",
-    "sepia",
-    "none",
-] as const;
-type BuiltinFilterType = (typeof builtinFilterTypes)[number];
-
 const customFilters = {
     red: () =>
         `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="red"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0    1 0 0 0 0    1 0 0 0 0    0 0 0 1 0" /></svg>#red')`,
@@ -82,9 +66,4 @@ export function renderToCanvas(
             }
         }
     }
-}
-
-function isBuiltinFilter(filter: string): filter is BuiltinFilterType {
-    // return builtinFilterTypes.includes(filter);
-    return builtinFilterTypes.some((f) => f === filter);
 }
