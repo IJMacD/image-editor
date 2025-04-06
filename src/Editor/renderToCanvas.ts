@@ -23,6 +23,8 @@ const customFilters = {
         const table = "0 ".repeat(n) + "1 ".repeat(100 - n);
         return `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="threshold"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="${table}"/><feFuncG type="discrete" tableValues="${table}"/><feFuncB type="discrete" tableValues="${table}"/></feComponentTransfer></svg>#threshold')`;
     },
+    luminanceToAlpha: () =>
+        `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="luminanceToAlpha"><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0    0 0 0 0 0    0 0 0 0 0    0.2126 0.7152 0.0722 0 0" /></svg>#luminanceToAlpha')`,
 } as { [name: string]: (...args: string[]) => string };
 type CustomFilter = keyof typeof customFilters;
 
@@ -35,13 +37,16 @@ export function renderToCanvas(
 
     if (!ctx) return;
 
+    canvas.width = layer.width;
+    canvas.height = layer.height;
+
     for (const c of layer.inputs) {
         const layer = getLayerByID(project.layers, c.id);
         ctx.globalCompositeOperation = c.operation;
 
         ctx.filter = c.filter
             ? c.filter.replace(
-                  /([a-z0-9-]+)\(([^)]*)\)/g,
+                  /([a-z0-9-]+)\(([^)]*)\)/gi,
                   (filter, name, args) => {
                       if (name in customFilters) {
                           const fn = customFilters[name as CustomFilter];

@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { CompositeLayer, ImageProject, InputProperties } from "../types";
-import { getLayerByID, getNextLayerID, isCompositeLayer } from "../util/project";
+import { getLayerByID, getNextLayerID, isBaseLayer, isCompositeLayer } from "../util/project";
 import { DispatchContext, StoreContext } from "../Store/context";
-import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, newBaseLayer, removeCompositeLayerInput, transplantCompositeLayerInput } from "../Store/project/actions";
+import { deleteLayer, editCompositeLayerInput, moveCompositeLayerInput, newBaseLayer, newLayer, removeCompositeLayerInput, transplantCompositeLayerInput } from "../Store/project/actions";
 import { LayerPropertiesPanel } from "./LayerPropertiesPanel";
 import { InputPropertiesPanel } from "./InputPropertiesPanel";
 import { setActiveLayer, setSelectedInputPath } from "../Store/ui/actions";
@@ -25,7 +25,14 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
     function handleAdd () {
         const parent = selectNearestParent(store);
         if (store.project && typeof parent === "number") {
-        dispatch(newBaseLayer(getNextLayerID(store.project), parent))
+            dispatch(newBaseLayer(getNextLayerID(store.project), parent))
+        }
+    }
+
+    function handleDuplicate () {
+        if (isBaseLayer(pathLayer)) {
+            const action = newLayer(store, { canvas: pathLayer.canvas });
+            action && dispatch(action)
         }
     }
 
@@ -105,7 +112,8 @@ export function CompositionTreePanel ({ project }: { project: ImageProject}) {
                 }
             </ul>
             <div>
-                <button onClick={handleAdd} className={buttonStyle} disabled={!haveSelectedPath}>*️⃣</button>
+                <button onClick={handleAdd} className={buttonStyle} disabled={!haveSelectedPath} title="New Layer">*️⃣</button>
+                <button onClick={handleDuplicate} className={buttonStyle} disabled={!haveSelectedPath} title="Duplicate Layer">❐</button>
                 <button onClick={() => handleMove(-1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === 0}>↑</button>
                 <button onClick={() => handleMove(+1)} className={buttonStyle} disabled={!haveSelectedPath || pathIndex === currentChildCount - 1}>↓</button>
                 <button onClick={() => handleIndent()} className={buttonStyle} disabled={!haveSelectedPath || typeof precedingCompositeLayerID === "undefined"}>→</button>

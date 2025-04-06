@@ -60,9 +60,16 @@ export function projectReducer(
             break;
         case ActionTypes.NEW_LAYER:
             if (state) {
-                const { width, height } = state;
 
-                const { id, isComposite, parent, ...rest } = action.payload;
+                const {
+                    id,
+                    isComposite,
+                    parent,
+                    canvas = null,
+                    ...rest
+                } = action.payload;
+
+                const { width, height } = canvas || state;
 
                 const newLayer = isComposite
                     ? {
@@ -78,9 +85,9 @@ export function projectReducer(
                           name: `Layer ${id}`,
                           width,
                           height,
-                          canvas: null,
+                          canvas,
                           history: {
-                              canvases: [],
+                              canvases: canvas ? [canvas] : [],
                               index: -1,
                           },
                           ...rest,

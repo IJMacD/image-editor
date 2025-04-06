@@ -50,7 +50,7 @@ export function TabPanel({ labels = [], children = [], selectedIndex, onClickTab
           }
         </ul>
       </div>
-      <div className="flex-1">
+      <div className="flex-1 overflow-auto">
         {
           currentTab
         }

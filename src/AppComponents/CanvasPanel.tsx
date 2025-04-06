@@ -37,8 +37,8 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
     editorRef.current.setTool(tool, toolOptions);
   }, [store.ui]);
 
-  const width = editableLayer?.width || canvas?.width || 512;
-  const height = editableLayer?.height || canvas?.height || 512;
+  const width = canvas?.width || 512;
+  const height = canvas?.height || 512;
 
   useEffect(() => {
     if (overlayCanvasRef.current) {
@@ -132,7 +132,7 @@ export function CanvasPanel({ canvas, editableLayer, editableInput }: { canvas: 
 
   return (
     <div
-      className="m-4 relative border-1 inline-block"
+      className="m-8 relative border-1 inline-block"
       onMouseDown={handleMouseDown}
       style={{
         backgroundImage: `url(${checkerBoard})`,

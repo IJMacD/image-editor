@@ -34,6 +34,17 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
         }
     }
 
+    function handleResize () {
+        const width = parseInt(prompt("Enter width", layer.width.toString()) || "");
+        if (width) {
+            const height = parseInt(prompt("Enter height", layer.height.toString()) || "");
+
+            if (height) {
+                dispatch(editLayer(layer.id, { width, height }))
+            }
+        }
+    }
+
     return (
         <div className="p-2 border-b-1 border-b-gray-200">
             <h2 className="font-bold text-xl">
@@ -41,12 +52,13 @@ export function LayerPropertiesPanel({ layer }: { layer: Layer }) {
                 <button onClick={handleRename} className="ml-2 cursor-pointer">✎</button>
             </h2>
             <b>Layer Properties</b>
-            <p>{layer.width}×{layer.height}</p>
+            <p>{layer.width}×{layer.height} <button onClick={handleResize} className="px-2 border-1 border-gray-400 bg-gray-200 rounded">Resize</button></p>
             {isCompositeLayer(layer) &&
                 <div className="whitespace-nowrap">
                     <label>
                         <span className="mr-1">Add Layer</span>
-                        <select value={selectedInsertLayer} onChange={e => setSelectedInsertLayer(+e.target.value)} className="border-1 rounded border-gray-300">
+                        <select value={selectedInsertLayer||nonRootLayers[0].id} onChange={e => setSelectedInsertLayer(+e.target.value)} className="border-1 rounded border-gray-300">
+                            <option />
                             {
                                 nonRootLayers.map((layer) => <option key={layer.id} value={layer.id}>{layer.name}</option>)
                             }

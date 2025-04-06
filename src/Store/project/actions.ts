@@ -1,4 +1,7 @@
 import { BaseLayer, CompositeLayer, InputProperties, Layer } from "../../types";
+import { getNextLayerID } from "../../util/project";
+import { AppState } from "../reducer";
+import { selectNearestParent } from "../selectors";
 
 export enum ActionTypes {
     NEW_DOCUMENT = "project/newDocument",
@@ -30,6 +33,7 @@ type NewLayerAction = {
         name?: string;
         width?: number;
         height?: number;
+        canvas?: HTMLCanvasElement | null;
     };
 };
 
@@ -141,6 +145,19 @@ export function newDocument(): NewDocumentAction {
     };
 }
 
+// "Smart" action creator
+export function newLayer(store: AppState, layer: Partial<Omit<BaseLayer, "id">>): NewLayerAction|undefined {
+    const parent = selectNearestParent(store);
+    if (store.project && typeof parent === "number") {
+        const id = getNextLayerID(store.project)
+        return {
+            type: ActionTypes.NEW_LAYER,
+            payload: { id, parent, isComposite: false, ...layer },
+        };
+    }
+}
+
+// Dumb action creators
 export function newBaseLayer(id: number, parent: number): NewLayerAction {
     return {
         type: ActionTypes.NEW_LAYER,

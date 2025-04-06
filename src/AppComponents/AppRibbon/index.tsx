@@ -3,7 +3,7 @@ import { Ribbon } from "../../Widgets/Ribbon";
 import { RibbonButton } from "../../Widgets/RibbonButton";
 import { RibbonDivider } from "../../Widgets/RibbonDivider";
 import { StoreContext, DispatchContext } from "../../Store/context";
-import { newBaseLayer, newCompositeLayer, newComposition, newDocument } from "../../Store/project/actions";
+import { newBaseLayer, newCompositeLayer, newComposition, newDocument, newLayer } from "../../Store/project/actions";
 import { RibbonTab } from "../../Widgets/RibbonTab";
 import { selectProject } from "../../Store/project/selectors";
 import { setRibbonTab, setToolFeather, setToolOptions, setToolSize } from "../../Store/ui/actions";
@@ -30,12 +30,40 @@ export function AppRibbon () {
 
   const isActiveLayerABaseLayer = isBaseLayer(selectSelectedInputLayer(store))
 
+  function handleImportImage () {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.style = "position: absolute; top: 0; visibility: hidden";
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file) {
+        const img = document.createElement("img");
+        img.addEventListener("load", () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0);
+          const action = newLayer(store, { canvas });
+          if (action) {
+            dispatch(action)
+          }
+        });
+        img.src = URL.createObjectURL(file);
+      }
+    });
+    document.body.append(input);
+    input.click();
+    input.remove();
+  }
+
   return (
     <Ribbon selectedTabID={ribbonTab} onClickTab={(id) => dispatch(setRibbonTab(id))}>
       <RibbonTab id="file" label="File">
         <RibbonButton icon="📄" label="New" onClick={() => dispatch(newDocument())} disabled={!!project} />
         <RibbonButton icon="📂" label="Open" />
         <RibbonButton icon="💾" label="Save" disabled={!project} />
+        <RibbonButton icon="📷" label="Import" disabled={!project} onClick={() => handleImportImage()} />
         <RibbonButton icon="🖼️" label="Export" disabled={!project} />
         <RibbonDivider />
         <RibbonButton icon="*️⃣" label="New Layer" onClick={() => {

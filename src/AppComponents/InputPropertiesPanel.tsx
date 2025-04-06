@@ -34,7 +34,9 @@ export function InputPropertiesPanel ({ input, onEdit }: { input: InputPropertie
         transform.c = sy * -Math.sin(rotation);
         transform.d = sy * Math.cos(rotation);
 
-        onEdit({ transform })
+        if (transform.toString() != input.transform.toString()) {
+            onEdit({ transform })
+        }
 
     }, [sxText, syText, rotationText]);
 

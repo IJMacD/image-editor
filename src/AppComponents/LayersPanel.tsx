@@ -24,7 +24,7 @@ export function LayersPanel ({ project }: { project: ImageProject}) {
 
   const selectedIndex = layers.findIndex(l => l.id === activeLayerID);
 
-  const className = 'bg-white flex-2 h-full p-4 flex place-items-center justify-center';
+  const className = 'bg-white flex-2 min-h-full min-w-full w-fit';
 
   function handleTabClick(index: number) {
     if (index < layers.length) {
